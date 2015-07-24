@@ -1,0 +1,43 @@
+{
+  "name": "zs-unimongo",
+  "version": "0.0.1",
+  "description": "Unimodel library for accessing mongodb",
+  "main": "./dist/lib/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git@git.zipscene.com:zsapilibs/zs-unimongo.git"
+  },
+  "scripts": {
+    "lint": "node ./node_modules/.bin/eslint . || exit 0",
+    "docs": "node ./node_modules/.bin/yuidoc .",
+    "test": "npm run-script build && node ./node_modules/.bin/mocha ./dist/test -R spec",
+    "build": "rm -rf dist && ./node_modules/.bin/broccoli build dist && rm -rf tmp",
+    "prepublish": "npm run-script build && npm run-script docs"
+  },
+  "dependencies": {
+    "babel-runtime": "5.8.3",
+    "crisphooks": "^2.0.0",
+    "inheritz": "^1.2.0",
+    "lodash": "^3.10.0",
+    "pasync": "^1.3.0",
+    "xerror": "^1.0.0",
+    "zstreams": "^3.2.1"
+  },
+  "devDependencies": {
+    "broccoli": "^0.16.4",
+    "broccoli-babel-transpiler": "^5.3.1",
+    "broccoli-cli": "^1.0.0",
+    "broccoli-merge-trees": "^0.2.2",
+    "broccoli-static-compiler": "^0.2.1",
+    "broccoli-wrap": "0.0.2",
+    "chai": "^3.2.0",
+    "es6-promise": "^2.3.0",
+    "eslint": "^1.0.0-rc-1",
+    "mocha": "^2.2.5",
+    "source-map-support": "^0.3.2",
+    "yuidocjs": "^0.8.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.zipscene.com/"
+  }
+}
