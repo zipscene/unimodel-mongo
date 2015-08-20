@@ -3,6 +3,7 @@ const createModel = require('../lib').createModel;
 const UnimongoDb = require('../lib').UnimongoDb;
 const UnimongoError = require('../lib').UnimongoError;
 const UnimongoModel = require('../lib').UnimongoModel;
+const UnimongoDocument = require('../lib').UnimongoDocument;
 const pasync = require('pasync');
 const testScaffold = require('./lib/mongo-scaffold');
 
@@ -24,7 +25,7 @@ describe('UnimongoModel', function() {
 			});
 	});
 
-	it('should construct the appropriate indices', function() {
+	it('should recognize the appropriate indices', function() {
 		let model = createModel('testings', {
 			foo: { type: String, index: true },
 			bar: { type: Number, unique: true },
@@ -47,6 +48,77 @@ describe('UnimongoModel', function() {
 			{ spec: { 'baz.zip': -1 }, options: {} },
 			{ spec: { foo: 1, bar: -1, 'baz.buz': '2dsphere' }, options: { unique: true, sparse: true } }
 		]);
+	});
+
+	it('should create indices', function() {
+		let model = createModel('testings', {
+			foo: { type: String, unique: true },
+			bar: { type: 'geopoint', index: true }
+		}, {
+			autoIndexId: false
+		});
+		return model.collectionPromise
+			.then((collection) => collection.indexes())
+			.then((indexes) => {
+				expect(indexes.length).to.equal(2);
+			});
+	});
+
+	it('should not fail if indices already exist', function() {
+		function makeModel() {
+			return createModel('testings', {
+				foo: { type: String, unique: true },
+				bar: { type: 'geopoint', index: true }
+			}, {
+				autoIndexId: false
+			});
+		}
+		return makeModel().collectionPromise
+			.then(() => makeModel().collectionPromise)
+			.then((collection) => collection.indexes())
+			.then((indexes) => {
+				expect(indexes.length).to.equal(2);
+			});
+	});
+
+	it('should insert documents into the collection', function() {
+		let model = createModel('testings', {
+			foo: Number
+		});
+		return model
+			.insert({ foo: '123' })
+			.then((result) => {
+				expect(result.data.foo).to.equal(123);
+				expect(result.getInternalId()).to.exist;
+			});
+	});
+
+	it('should insert multiple documents into the collection', function() {
+		let model = createModel('testings', {
+			foo: Number
+		});
+		return model
+			.insertMulti([ { foo: '123' }, { foo: '234' } ])
+			.then((results) => {
+				expect(Array.isArray(results)).to.be.true;
+				expect(results[0].data.foo).to.equal(123);
+				expect(results[0].getInternalId()).to.exist;
+				expect(results[1].data.foo).to.equal(234);
+				expect(results[1].getInternalId()).to.exist;
+			});
+	});
+
+	it('should return documents from findStream()', function() {
+		let model = createModel('testings', {
+			foo: Number
+		});
+		return model.insertMulti([ { foo: 1 }, { foo: 2 } ])
+			.then(() => model.findStream({ foo: 2 }).intoArray())
+			.then((array) => {
+				expect(array.length).to.equal(1);
+				expect(array[0].data.foo).to.equal(2);
+				expect(array[0]).to.be.an.instanceof(UnimongoDocument);
+			});
 	});
 
 });
