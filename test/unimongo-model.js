@@ -108,6 +108,20 @@ describe('UnimongoModel', function() {
 			});
 	});
 
+	it('should move internal id to the instance', function() {
+		let model = createModel('testings', {
+			foo: Number
+		});
+		return model
+			.insert({ foo: '123' })
+			.then((result) => {
+				expect(result.id).to.exist;
+				expect(result.getInternalId()).to.exist;
+				expect(result.data._id).to.be.undefined;
+				expect(result._originalData._id).to.be.undefined;
+			});
+	});
+
 	it('should return documents from findStream()', function() {
 		let model = createModel('testings', {
 			foo: Number
