@@ -140,6 +140,26 @@ describe('UnimongoModel', function() {
 			});
 	});
 
+	it('should remove documents', function() {
+		let model = createModel('testings', {
+			foo: String
+		});
+
+		return model.insert({ foo: '123' })
+			.then((document) => {
+				return document.remove();
+			})
+			.then((document) => {
+				return model.collectionPromise
+					.then((collection) => {
+						return collection.findOne({ _id: document._id });
+					})
+			})
+			.then((result) => {
+				expect(result).to.be.null;
+			});
+	});
+
 	it('should return documents from findStream()', function() {
 		let model = createModel('testings', {
 			foo: Number
@@ -154,6 +174,3 @@ describe('UnimongoModel', function() {
 	});
 
 });
-
-
-
