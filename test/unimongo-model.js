@@ -1,9 +1,11 @@
 const expect = require('chai').expect;
-const createModel = require('../lib').createModel;
-const UnimongoDb = require('../lib').UnimongoDb;
-const UnimongoError = require('../lib').UnimongoError;
-const UnimongoModel = require('../lib').UnimongoModel;
-const UnimongoDocument = require('../lib').UnimongoDocument;
+const {
+	createModel,
+	UnimongoDb,
+	UnimongoError,
+	UnimongoModel,
+	UnimongoDocument
+} = require('../lib');
 const pasync = require('pasync');
 const testScaffold = require('./lib/mongo-scaffold');
 
@@ -115,10 +117,26 @@ describe('UnimongoModel', function() {
 		return model
 			.insert({ foo: '123' })
 			.then((result) => {
-				expect(result.id).to.exist;
+				expect(result._id).to.exist;
+				expect(result._originalId).to.exist;
 				expect(result.getInternalId()).to.exist;
 				expect(result.data._id).to.be.undefined;
 				expect(result._originalData._id).to.be.undefined;
+			});
+	});
+
+	it('should save changes to existing data with no document', function() {
+		let model = createModel('testings', {
+			foo: String
+		});
+
+		return model.insert({ foo: '123' })
+			.then((document) => {
+				document.data.foo = '456';
+				return document.save();
+			})
+			.then((document) => {
+				expect(document.data).to.deep.equal({ foo: '456' });
 			});
 	});
 
