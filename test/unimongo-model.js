@@ -203,6 +203,16 @@ describe('UnimongoModel', function() {
 			});
 	});
 
+	it.only('should return number of matched records in UnimongoModel#count', function() {
+		let model = createModel('testings', { foo: Number });
+
+		return model.insertMulti([ { foo: 1 }, { foo: 1 } ])
+			.then(() => model.count({ foo: 1 }))
+			.then((count) => {
+				expect(count).to.equal(2);
+			});
+	});
+
 	it('should remove records with UnimongoModel#remove', function() {
 		let model = createModel('testings', { foo: Number });
 
