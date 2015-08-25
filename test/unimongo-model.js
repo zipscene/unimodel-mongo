@@ -173,4 +173,19 @@ describe('UnimongoModel', function() {
 			});
 	});
 
+	it('should remove documents with Model#remove', function() {
+		let model = createModel('testings', {
+			foo: Number
+		});
+
+		return model.insertMulti([ { foo: 1 }, { foo: 2 } ])
+			.then(() => model.remove({ foo: 1 }))
+			.then(() => model.find({}))
+			.then((results) => {
+				expect(results.length).to.equal(1);
+				expect(results[0].data.foo).to.equal(2);
+				expect(results[0]).to.be.an.instanceof(UnimongoDocument);
+			});
+	});
+
 });
