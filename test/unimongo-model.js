@@ -125,6 +125,43 @@ describe('UnimongoModel', function() {
 			});
 	});
 
+	it('should save changes to a new document', function() {
+		let model = createModel('testings', {
+			foo: String
+		});
+
+		let document = new UnimongoDocument(model, {
+			foo: '123'
+		});
+
+		document.data.foo = '456';
+
+		return document.save()
+			.then((document) => {
+				expect(document.data).to.deep.equal({ foo: '456' });
+			});
+	});
+
+	it('should save changes to an existing document', function() {
+		let model = createModel('testings', {
+			foo: String
+		});
+
+		let document = new UnimongoDocument(model, {
+			foo: '123'
+		});
+
+		return document.save()
+			.then((document) => {
+				document.data.foo = '456';
+
+				return document.save();
+			})
+			.then((document) => {
+				expect(document.data).to.deep.equal({ foo: '456' });
+			});
+	});
+
 	it('should save changes to existing data with no document', function() {
 		let model = createModel('testings', {
 			foo: String
@@ -153,7 +190,7 @@ describe('UnimongoModel', function() {
 				return model.collectionPromise
 					.then((collection) => {
 						return collection.findOne({ _id: document._id });
-					})
+					});
 			})
 			.then((result) => {
 				expect(result).to.be.null;
