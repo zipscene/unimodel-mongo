@@ -240,4 +240,24 @@ describe('UnimongoModel', function() {
 			});
 	});
 
+	it('should handle setting and removing items from the same array in UnimongoDocument#save', function() {
+		let model = createModel('testings', { foo: [ String ] });
+
+		let document = new UnimongoDocument(model, {
+			foo: [ 'a', 'b', 'c' ]
+		});
+
+		return document.save()
+			.then((document) => {
+				document.data.foo = [ 'a', 'c' ];
+
+				return document.save();
+			})
+			.then((document) => {
+				expect(document.data.foo.length).to.equal(2);
+				expect(document.data.foo[0]).to.equal('a');
+				expect(document.data.foo[1]).to.equal('c');
+			});
+	});
+
 });
