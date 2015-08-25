@@ -197,10 +197,25 @@ describe('UnimongoModel', function() {
 			});
 	});
 
-	it('should return documents from findStream()', function() {
+	it('should return documents from Model#find', function() {
 		let model = createModel('testings', {
 			foo: Number
 		});
+
+		return model.insertMulti([ { foo: 1 }, { foo: 2 } ])
+			.then(() => model.find({ foo: 2 }))
+			.then((results) => {
+				expect(results.length).to.equal(1);
+				expect(results[0].data.foo).to.equal(2);
+				expect(results[0]).to.be.an.instanceof(UnimongoDocument);
+			});
+	});
+
+	it('should return documents from Model#findStream', function() {
+		let model = createModel('testings', {
+			foo: Number
+		});
+
 		return model.insertMulti([ { foo: 1 }, { foo: 2 } ])
 			.then(() => model.findStream({ foo: 2 }).intoArray())
 			.then((array) => {
