@@ -218,6 +218,28 @@ describe('UnimongoModel', function() {
 			});
 	});
 
+	it('should handle partial documents in UnimongoModel#find', function() {
+		let model = createModel('testings', { foo: Number, bar: Number });
+
+		return model.insertMulti([ { foo: 1, bar: 1 }, { foo: 2, bar: 2 } ])
+			.then(() => model.find({ foo: 2 }, { fields: [ 'bar' ] }))
+			.then((documents) => {
+				expect(documents[0].options.isPartial).to.be.true;
+				expect(documents[0].data).to.deep.equal({ bar: 2 });
+			});
+	});
+
+	it('should handle partial documents in UnimongoModel#findStream', function() {
+		let model = createModel('testings', { foo: Number, bar: Number });
+
+		return model.insertMulti([ { foo: 1, bar: 1 }, { foo: 2, bar: 2 } ])
+			.then(() => model.findStream({ foo: 2 }, { fields: [ 'bar' ] }).intoArray())
+			.then((documents) => {
+				expect(documents[0].options.isPartial).to.be.true;
+				expect(documents[0].data).to.deep.equal({ bar: 2 });
+			});
+	});
+
 	it('should return number of matched records in UnimongoModel#count', function() {
 		let model = createModel('testings', { foo: Number });
 
