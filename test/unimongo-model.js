@@ -84,9 +84,8 @@ describe('UnimongoModel', function() {
 	});
 
 	it('should insert documents into the collection', function() {
-		let model = createModel('testings', {
-			foo: Number
-		});
+		let model = createModel('testings', { foo: Number });
+
 		return model
 			.insert({ foo: '123' })
 			.then((result) => {
@@ -96,9 +95,8 @@ describe('UnimongoModel', function() {
 	});
 
 	it('should insert multiple documents into the collection', function() {
-		let model = createModel('testings', {
-			foo: Number
-		});
+		let model = createModel('testings', { foo: Number });
+
 		return model
 			.insertMulti([ { foo: '123' }, { foo: '234' } ])
 			.then((results) => {
@@ -111,9 +109,8 @@ describe('UnimongoModel', function() {
 	});
 
 	it('should move internal id to the instance', function() {
-		let model = createModel('testings', {
-			foo: Number
-		});
+		let model = createModel('testings', { foo: Number });
+
 		return model
 			.insert({ foo: '123' })
 			.then((result) => {
@@ -126,81 +123,64 @@ describe('UnimongoModel', function() {
 	});
 
 	it('should save changes to a new document', function() {
-		let model = createModel('testings', {
-			foo: String
-		});
+		let model = createModel('testings', { foo: String });
 
 		let document = new UnimongoDocument(model, {
-			foo: '123'
+			foo: 'bar'
 		});
 
-		document.data.foo = '456';
+		document.data.foo = 'baz';
 
 		return document.save()
 			.then((document) => {
-				expect(document.data).to.deep.equal({ foo: '456' });
+				expect(document.data).to.deep.equal({ foo: 'baz' });
 			});
 	});
 
 	it('should save changes to an existing document', function() {
-		let model = createModel('testings', {
-			foo: String
-		});
+		let model = createModel('testings', { foo: String });
 
 		let document = new UnimongoDocument(model, {
-			foo: '123'
+			foo: 'bar'
 		});
 
 		return document.save()
 			.then((document) => {
-				document.data.foo = '456';
+				document.data.foo = 'baz';
 
 				return document.save();
 			})
 			.then((document) => {
-				expect(document.data).to.deep.equal({ foo: '456' });
+				expect(document.data).to.deep.equal({ foo: 'baz' });
 			});
 	});
 
 	it('should save changes to existing data with no document', function() {
-		let model = createModel('testings', {
-			foo: String
-		});
+		let model = createModel('testings', { foo: String });
 
-		return model.insert({ foo: '123' })
+		return model.insert({ foo: 'bar' })
 			.then((document) => {
-				document.data.foo = '456';
+				document.data.foo = 'baz';
 				return document.save();
 			})
 			.then((document) => {
-				expect(document.data).to.deep.equal({ foo: '456' });
+				expect(document.data).to.deep.equal({ foo: 'baz' });
 			});
 	});
 
-	it('should remove documents', function() {
-		let model = createModel('testings', {
-			foo: String
-		});
+	it('should remove documents with UnimongoDocument#remove', function() {
+		let model = createModel('testings', { foo: String });
 
-		return model.insert({ foo: '123' })
-			.then((document) => {
-				return document.remove();
-			})
-			.then((document) => {
-				return model.collectionPromise
-					.then((collection) => {
-						return collection.findOne({ _id: document._id });
-					});
-			})
+		return model.insert({ foo: 'bar' })
+			.then((document) => document.remove())
+			.then((document) => model.find({ foo: 'bar' }))
 			.then((result) => {
-				expect(result).to.be.null;
+				expect(result).to.be.empty;
 			});
 	});
 
-	it('should return documents from Model#find', function() {
-		let model = createModel('testings', {
-			foo: Number
-		});
+	it('should return documents from UnimongoModel#find', function() {
+		let model = createModel('testings', { foo: Number });
 
 		return model.insertMulti([ { foo: 1 }, { foo: 2 } ])
 			.then(() => model.find({ foo: 2 }))
@@ -211,10 +191,8 @@ describe('UnimongoModel', function() {
 			});
 	});
 
-	it('should return documents from Model#findStream', function() {
-		let model = createModel('testings', {
-			foo: Number
-		});
+	it('should return documents from UnimongoModel#findStream', function() {
+		let model = createModel('testings', { foo: Number });
 
 		return model.insertMulti([ { foo: 1 }, { foo: 2 } ])
 			.then(() => model.findStream({ foo: 2 }).intoArray())
@@ -225,10 +203,8 @@ describe('UnimongoModel', function() {
 			});
 	});
 
-	it('should remove documents with Model#remove', function() {
-		let model = createModel('testings', {
-			foo: Number
-		});
+	it('should remove records with UnimongoModel#remove', function() {
+		let model = createModel('testings', { foo: Number });
 
 		return model.insertMulti([ { foo: 1 }, { foo: 2 } ])
 			.then(() => model.remove({ foo: 1 }))
