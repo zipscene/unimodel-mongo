@@ -155,6 +155,21 @@ describe('UnimongoModel', function() {
 			});
 	});
 
+	it('should update documents with UnimongoModel#update', function() {
+		let model = createModel('testings', { foo: String });
+
+		return model.insert({ foo: 'bar' })
+			.then(() => model.update({ foo: 'bar' }, { foo: 'baz' }))
+			.then((result) => {
+				expect(result.result.nModified).to.equal(1);
+			})
+			.then(() => model.find({ foo: 'baz' }))
+			.then((documents) => {
+				expect(documents.length).to.equal(1);
+				expect(documents[0].data.foo).to.equal('baz');
+			});
+	});
+
 	it('should save changes to existing data with no document', function() {
 		let model = createModel('testings', { foo: String });
 
@@ -184,10 +199,10 @@ describe('UnimongoModel', function() {
 
 		return model.insertMulti([ { foo: 1 }, { foo: 2 } ])
 			.then(() => model.find({ foo: 2 }))
-			.then((results) => {
-				expect(results.length).to.equal(1);
-				expect(results[0].data.foo).to.equal(2);
-				expect(results[0]).to.be.an.instanceof(UnimongoDocument);
+			.then((documents) => {
+				expect(documents.length).to.equal(1);
+				expect(documents[0].data.foo).to.equal(2);
+				expect(documents[0]).to.be.an.instanceof(UnimongoDocument);
 			});
 	});
 
@@ -196,14 +211,14 @@ describe('UnimongoModel', function() {
 
 		return model.insertMulti([ { foo: 1 }, { foo: 2 } ])
 			.then(() => model.findStream({ foo: 2 }).intoArray())
-			.then((array) => {
-				expect(array.length).to.equal(1);
-				expect(array[0].data.foo).to.equal(2);
-				expect(array[0]).to.be.an.instanceof(UnimongoDocument);
+			.then((documents) => {
+				expect(documents.length).to.equal(1);
+				expect(documents[0].data.foo).to.equal(2);
+				expect(documents[0]).to.be.an.instanceof(UnimongoDocument);
 			});
 	});
 
-	it.only('should return number of matched records in UnimongoModel#count', function() {
+	it('should return number of matched records in UnimongoModel#count', function() {
 		let model = createModel('testings', { foo: Number });
 
 		return model.insertMulti([ { foo: 1 }, { foo: 1 } ])
@@ -219,10 +234,9 @@ describe('UnimongoModel', function() {
 		return model.insertMulti([ { foo: 1 }, { foo: 2 } ])
 			.then(() => model.remove({ foo: 1 }))
 			.then(() => model.find({}))
-			.then((results) => {
-				expect(results.length).to.equal(1);
-				expect(results[0].data.foo).to.equal(2);
-				expect(results[0]).to.be.an.instanceof(UnimongoDocument);
+			.then((documents) => {
+				expect(documents.length).to.equal(1);
+				expect(documents[0].data.foo).to.equal(2);
 			});
 	});
 
