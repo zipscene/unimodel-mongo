@@ -240,6 +240,25 @@ describe('UnimongoModel', function() {
 			});
 	});
 
+	it('should properly handle saving partial documents in UnimongoDocument#save', function() {
+		let model = createModel('testings', { foo: Number, bar: Number });
+		let model2 = createModel('testings', { foo: Number, bar: Number }, { allowSavingPartials: false });
+
+		return model.insert({ foo: 1, bar: 1 })
+			.then(() => model.find({ foo: 1 }, { fields: [ 'bar' ] }))
+			.then((documents) => {
+				let document = documents[0];
+				document.data.foo = 2;
+				expect(() => document.save()).to.not.throw(Error);
+			})
+			.then(() => model2.find({ foo: 1 }, { fields: [ 'bar' ] }))
+			.then((documents) => {
+				let document = documents[0];
+				document.data.foo = 2;
+				expect(() => document.save()).to.throw(Error);
+			});
+	});
+
 	it('should return number of matched records in UnimongoModel#count', function() {
 		let model = createModel('testings', { foo: Number });
 
