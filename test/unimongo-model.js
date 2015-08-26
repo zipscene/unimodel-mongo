@@ -52,6 +52,79 @@ describe('UnimongoModel', function() {
 		]);
 	});
 
+	it('should retrieve keys', function() {
+		let model = createModel('testings', {
+			foo: String
+		}, {
+			keys: [ 'foo' ],
+			initialize: false
+		});
+
+		let keys = model.getKeys();
+		expect(keys.length).to.equal(1);
+		expect(keys[0]).to.equal('foo');
+
+		let model2 = createModel('testings', {
+			foo: { type: String, key: true },
+			bar: {
+				baz: { type: Number, key: true }
+			}
+		}, { initialize: false });
+
+		let keys2 = model2.getKeys();
+		expect(keys2.length).to.equal(2);
+		expect(keys2[0]).to.equal('foo');
+		expect(keys2[1]).to.equal('bar.baz');
+
+		let model3 = createModel('testings', {
+			foo: String,
+			bar: Number,
+			baz: {
+				oof: Boolean,
+				rab: Date
+			},
+			buz: { type: 'geojson' }
+		}, { initialize: false });
+		model3.index({ foo: 1 });
+		model3.index({ foo: 1, bar: -1 });
+		model3.index({ foo: 1, bar: -1, 'baz.oof': 1 });
+		model3.index({ foo: 1, bar: -1, 'baz': 1, buz: '2dsphere' });
+
+		let keys3 = model3.getKeys();
+		expect(keys3.length).to.equal(3);
+		expect(keys3[0]).to.equal('baz.oof');
+		expect(keys3[1]).to.equal('bar');
+		expect(keys3[2]).to.equal('foo');
+
+		let model4 = createModel('testings', {
+			foo: { type: String, index: true },
+			bar: { type: Number, unique: true },
+			baz: {
+				buz: [ { type: 'geopoint', index: true } ],
+				bip: { type: 'geojson', index: '2dsphere' },
+				zap: { type: String, index: true, sparse: true },
+				zip: { type: Number, index: -1 }
+			},
+			bork: {
+				fork: { type: String, index: true, sparse: true },
+				dork: { type: Number, index: -1 }
+			}
+		}, { initialize: false });
+
+		let keys4 = model4.getKeys();
+		expect(keys4.length).to.equal(1);
+		expect(keys4[0]).to.equal('foo');
+
+		let model5 = createModel('testings', {
+			foo: String,
+			bar: {
+				baz: { type: 'geojson', index: '2dsphere' }
+			}
+		}, { initialize: false });
+
+		expect(() => model5.getKeys()).to.throw(Error);
+	});
+
 	it('should create indices', function() {
 		let model = createModel('testings', {
 			foo: { type: String, unique: true },
