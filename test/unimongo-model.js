@@ -1,14 +1,6 @@
 const chai = require('chai');
-const XError = require('xerror');
 const expect = chai.expect;
-const {
-	createModel,
-	UnimongoDb,
-	UnimongoError,
-	UnimongoModel,
-	UnimongoDocument
-} = require('../lib');
-const pasync = require('pasync');
+const { createModel, UnimongoDocument } = require('../lib');
 const testScaffold = require('./lib/mongo-scaffold');
 
 chai.use(require('chai-as-promised'));

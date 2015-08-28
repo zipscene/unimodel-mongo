@@ -2,7 +2,6 @@
  * Common test code for Unimongo.
  */
 const unimongo = require('../../lib');
-const UnimongoDb = unimongo.UnimongoDb;
 
 const config = {
 	uri: 'mongodb://localhost/unimongotest',
