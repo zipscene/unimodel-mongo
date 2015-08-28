@@ -9,8 +9,30 @@ describe('UnimongoError', function() {
 
 	beforeEach(testScaffold.resetAndConnect);
 
-	it('should error on duplicated keys', function() {
+	it('should error on duplicated id', function() {
 		let model = createModel('testings', { foo: String });
+
+		let collection;
+		let promise = model.collectionPromise
+			.then((_collection) => collection = _collection)
+			.then(() => collection.insert({ _id: 'some id', foo: 'bar' }))
+			.then((result) => collection.insert({ _id: 'some id', foo: 'baz' }))
+			.catch((err) => {
+				throw UnimongoError.fromMongoError(err, model);
+			})
+			.catch((err) => {
+				expect(err).to.be.an.instanceOf(UnimongoError);
+				expect(err.data.keys.length).to.equal(1);
+				expect(err.data.keys[0]).to.equal('_id');
+
+				throw err;
+			});
+
+		return expect(promise).to.be.rejectedWith(UnimongoError);
+	});
+
+	it('should error on duplicated keys', function() {
+		let model = createModel('testings', { foo: String, bar: String });
 		model.index({ foo: 1, bar: 1 }, { unique: true });
 
 		let collection;
