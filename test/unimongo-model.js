@@ -1,4 +1,6 @@
-const expect = require('chai').expect;
+const chai = require('chai');
+const XError = require('xerror');
+const expect = chai.expect;
 const {
 	createModel,
 	UnimongoDb,
@@ -8,6 +10,8 @@ const {
 } = require('../lib');
 const pasync = require('pasync');
 const testScaffold = require('./lib/mongo-scaffold');
+
+chai.use(require('chai-as-promised'));
 
 describe('UnimongoModel', function() {
 
@@ -225,6 +229,42 @@ describe('UnimongoModel', function() {
 			})
 			.then((document) => {
 				expect(document.data).to.deep.equal({ foo: 'baz' });
+			});
+	});
+
+	it('should save changes to an existing document with a changed id', function() {
+		let model = createModel('testings', { foo: String });
+
+		let document = new UnimongoDocument(model, { foo: 'bar' });
+
+		return document.save()
+			.then((document) => {
+				document.setInternalId('some-other-id');
+				document.data.foo = 'baz';
+
+				return document.save();
+			})
+			.then((document) => {
+				expect(document.getInternalId()).to.equal('some-other-id');
+			});
+	});
+
+	it('should error when updating document id to an existing one', function() {
+		let model = createModel('testings', { foo: String });
+
+		let document = new UnimongoDocument(model, { foo: 'bar' });
+		let document2 = new UnimongoDocument(model, { foo: 'baz' });
+
+		let existingId;
+		return document.save()
+			.then((document) => {
+				existingId = document.getInternalId();
+				return document2.save();
+			})
+			.then((document2) => {
+				document2.setInternalId(existingId);
+
+				expect(document2.save()).to.be.rejectedWith(XError);
 			});
 	});
 
