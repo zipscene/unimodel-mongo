@@ -1,7 +1,6 @@
 const chai = require('chai');
-const XError = require('xerror');
 const expect = chai.expect;
-const { UnimongoDocument, createModel } = require('../lib');
+const { UnimongoDocument, UnimongoError, createModel } = require('../lib');
 const testScaffold = require('./lib/mongo-scaffold');
 
 chai.use(require('chai-as-promised'));
@@ -89,7 +88,7 @@ describe('UnimongoDocument', function() {
 			.then((document2) => {
 				document2.setInternalId(existingId);
 
-				expect(document2.save()).to.be.rejectedWith(XError);
+				return expect(document2.save()).to.be.rejectedWith(UnimongoError);
 			});
 	});
 

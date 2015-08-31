@@ -9,7 +9,7 @@ describe('UnimongoError', function() {
 
 	beforeEach(testScaffold.resetAndConnect);
 
-	it('should error on duplicated id', function() {
+	it('should parse error on duplicated id', function() {
 		let model = createModel('testings', { foo: String });
 
 		let collection;
@@ -31,7 +31,7 @@ describe('UnimongoError', function() {
 		return expect(promise).to.be.rejectedWith(UnimongoError);
 	});
 
-	it('should error on duplicated keys', function() {
+	it('should parse error on duplicated keys', function() {
 		let model = createModel('testings', { foo: String, bar: String });
 		model.index({ foo: 1, bar: 1 }, { unique: true });
 
