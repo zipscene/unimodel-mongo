@@ -26,9 +26,7 @@ describe('UnimongoDocument', function() {
 	it('should save changes to a new document', function() {
 		let model = createModel('testings', { foo: String });
 
-		let document = new UnimongoDocument(model, {
-			foo: 'bar'
-		});
+		let document = new UnimongoDocument(model, { foo: 'bar' });
 
 		document.data.foo = 'baz';
 
@@ -41,9 +39,7 @@ describe('UnimongoDocument', function() {
 	it('should save changes to an existing document', function() {
 		let model = createModel('testings', { foo: String });
 
-		let document = new UnimongoDocument(model, {
-			foo: 'bar'
-		});
+		let document = new UnimongoDocument(model, { foo: 'bar' });
 
 		return document.save()
 			.then((document) => {
@@ -93,15 +89,16 @@ describe('UnimongoDocument', function() {
 	});
 
 	it('should save changes to existing data with no document', function() {
-		let model = createModel('testings', { foo: String });
+		let model = createModel('testings', { foo: String, bar: String });
 
-		return model.insert({ foo: 'bar' })
+		return model.insert({ foo: 'a', bar: 'b' })
 			.then((document) => {
-				document.data.foo = 'baz';
+				document.data.foo = 'c';
+
 				return document.save();
 			})
 			.then((document) => {
-				expect(document.data).to.deep.equal({ foo: 'baz' });
+				expect(document.data).to.deep.equal({ foo: 'c', bar: 'b' });
 			});
 	});
 
@@ -125,12 +122,14 @@ describe('UnimongoDocument', function() {
 			.then((documents) => {
 				let document = documents[0];
 				document.data.foo = 2;
+
 				expect(() => document.save()).to.not.throw(Error);
 			})
 			.then(() => model2.find({ foo: 1 }, { fields: [ 'bar' ] }))
 			.then((documents) => {
 				let document = documents[0];
 				document.data.foo = 2;
+
 				expect(() => document.save()).to.throw(Error);
 			});
 	});
@@ -138,9 +137,7 @@ describe('UnimongoDocument', function() {
 	it('should handle setting and removing items from the same array in UnimongoDocument#save', function() {
 		let model = createModel('testings', { foo: [ String ] });
 
-		let document = new UnimongoDocument(model, {
-			foo: [ 'a', 'b', 'c' ]
-		});
+		let document = new UnimongoDocument(model, { foo: [ 'a', 'b', 'c' ] });
 
 		return document.save()
 			.then((document) => {
