@@ -152,14 +152,25 @@ describe('UnimongoModel', function() {
 			});
 	});
 
+	it('should flag existing documents with `isExisting`', function() {
+		let model = createModel('testings', { foo: Number });
+
+		return model
+			.insert({ foo: '123' })
+			.then((document) => {
+				expect(document.options.isExisting).to.be.true;
+				expect(document.getInternalId()).to.exist;
+			});
+	});
+
 	it('should insert documents into the collection', function() {
 		let model = createModel('testings', { foo: Number });
 
 		return model
 			.insert({ foo: '123' })
-			.then((result) => {
-				expect(result.data.foo).to.equal(123);
-				expect(result.getInternalId()).to.exist;
+			.then((document) => {
+				expect(document.data.foo).to.equal(123);
+				expect(document.getInternalId()).to.exist;
 			});
 	});
 

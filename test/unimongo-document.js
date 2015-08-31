@@ -25,7 +25,6 @@ describe('UnimongoDocument', function() {
 
 	it('should save changes to a new document', function() {
 		let model = createModel('testings', { foo: String });
-
 		let document = new UnimongoDocument(model, { foo: 'bar' });
 
 		document.data.foo = 'baz';
@@ -38,7 +37,6 @@ describe('UnimongoDocument', function() {
 
 	it('should save changes to an existing document', function() {
 		let model = createModel('testings', { foo: String });
-
 		let document = new UnimongoDocument(model, { foo: 'bar' });
 
 		return document.save()
@@ -54,7 +52,6 @@ describe('UnimongoDocument', function() {
 
 	it('should save changes to an existing document with a changed id', function() {
 		let model = createModel('testings', { foo: String });
-
 		let document = new UnimongoDocument(model, { foo: 'bar' });
 
 		return document.save()
@@ -71,7 +68,6 @@ describe('UnimongoDocument', function() {
 
 	it('should error when updating document id to an existing one', function() {
 		let model = createModel('testings', { foo: String });
-
 		let document = new UnimongoDocument(model, { foo: 'bar' });
 		let document2 = new UnimongoDocument(model, { foo: 'baz' });
 
@@ -136,7 +132,6 @@ describe('UnimongoDocument', function() {
 
 	it('should handle setting and removing items from the same array in UnimongoDocument#save', function() {
 		let model = createModel('testings', { foo: [ String ] });
-
 		let document = new UnimongoDocument(model, { foo: [ 'a', 'b', 'c' ] });
 
 		return document.save()
@@ -149,6 +144,69 @@ describe('UnimongoDocument', function() {
 				expect(document.data.foo.length).to.equal(2);
 				expect(document.data.foo[0]).to.equal('a');
 				expect(document.data.foo[1]).to.equal('c');
+			});
+	});
+
+	it('should properly increment revision number when saving documents', function() {
+		let model = createModel('testings', { foo: String });
+		let model3 = createModel('testings', { foo: [ String ] });
+		let document1 = new UnimongoDocument(model, { foo: 'bar' });
+		let document2 = new UnimongoDocument(model, { foo: 'bar' });
+		let document3 = new UnimongoDocument(model3, { foo: [ 'a', 'b', 'c' ] });
+
+		document1.data.foo = 'baz';
+
+		expect(document1._revisionNumber).to.equal(1);
+		expect(document2._revisionNumber).to.equal(1);
+		expect(document3._revisionNumber).to.equal(1);
+
+		return model.insert({ foo: 'bar' })
+			.then((document) => {
+				document.data.foo = 'baz';
+
+				expect(document._revisionNumber).to.be.undefined;
+
+				return document.save();
+			})
+			.then((document) => {
+				expect(document._revisionNumber).to.equal(1);
+			})
+			.then(() => document1.save())
+			.then((document1) => {
+				expect(document1._revisionNumber).to.equal(1);
+			})
+			.then(() => document2.save())
+			.then((document2) => {
+				document2.data.foo = 'baz';
+
+				expect(document2._revisionNumber).to.equal(1);
+
+				return document2.save();
+			})
+			.then((document2) => {
+				expect(document2._revisionNumber).to.equal(2);
+			})
+			.then(() => document3.save())
+			.then((document3) => {
+				document3.data.foo = [ 'a', 'c' ];
+
+				expect(document3._revisionNumber).to.equal(1);
+
+				return document3.save();
+			})
+			.then((document3) => {
+				expect(document3._revisionNumber).to.equal(3);
+			});
+	});
+
+	it('should clean up instance when saving documents', function() {
+		let model = createModel('testings', { foo: String });
+		let document = new UnimongoDocument(model, { foo: 'bar' });
+
+		return document.save()
+			.then((document) => {
+				expect(document.data._id).to.be.undefined;
+				expect(document.data.__rev).to.be.undefined;
 			});
 	});
 
