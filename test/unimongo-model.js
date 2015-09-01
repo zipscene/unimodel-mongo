@@ -128,6 +128,7 @@ describe('UnimongoModel', function() {
 		}, {
 			autoIndexId: false
 		});
+
 		return model.collectionPromise
 			.then((collection) => collection.indexes())
 			.then((indexes) => {
@@ -144,6 +145,7 @@ describe('UnimongoModel', function() {
 				autoIndexId: false
 			});
 		}
+
 		return makeModel().collectionPromise
 			.then(() => makeModel().collectionPromise)
 			.then((collection) => collection.indexes())
@@ -155,8 +157,7 @@ describe('UnimongoModel', function() {
 	it('should flag existing documents with `isExisting`', function() {
 		let model = createModel('testings', { foo: Number });
 
-		return model
-			.insert({ foo: '123' })
+		return model.insert({ foo: '123' })
 			.then((document) => {
 				expect(document.options.isExisting).to.be.true;
 				expect(document.getInternalId()).to.exist;
@@ -166,8 +167,7 @@ describe('UnimongoModel', function() {
 	it('should insert documents into the collection', function() {
 		let model = createModel('testings', { foo: Number });
 
-		return model
-			.insert({ foo: '123' })
+		return model.insert({ foo: '123' })
 			.then((document) => {
 				expect(document.data.foo).to.equal(123);
 				expect(document.getInternalId()).to.exist;
@@ -177,8 +177,7 @@ describe('UnimongoModel', function() {
 	it('should insert multiple documents into the collection', function() {
 		let model = createModel('testings', { foo: Number });
 
-		return model
-			.insertMulti([ { foo: '123' }, { foo: '234' } ])
+		return model.insertMulti([ { foo: '123' }, { foo: '234' } ])
 			.then((results) => {
 				expect(Array.isArray(results)).to.be.true;
 				expect(results[0].data.foo).to.equal(123);
