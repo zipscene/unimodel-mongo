@@ -35,8 +35,7 @@ describe('UnimongoDocument', function() {
 	it('should move internal id to the instance', function() {
 		let model = createModel('testings', { foo: Number });
 
-		return model
-			.insert({ foo: '123' })
+		return model.insert({ foo: '123' })
 			.then((result) => {
 				expect(result._id).to.exist;
 				expect(result._originalId).to.exist;
