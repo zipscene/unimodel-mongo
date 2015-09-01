@@ -1,6 +1,7 @@
 const chai = require('chai');
 const expect = chai.expect;
 const { UnimongoDocument, UnimongoError, createModel } = require('../lib');
+const Model = require('zs-unimodel').Model;
 const testScaffold = require('./lib/mongo-scaffold');
 
 chai.use(require('chai-as-promised'));
@@ -8,6 +9,28 @@ chai.use(require('chai-as-promised'));
 describe('UnimongoDocument', function() {
 
 	beforeEach(testScaffold.resetAndConnect);
+
+	it('should trigger post-init hooks on init', function() {
+		class TestDocument extends UnimongoDocument {
+			constructor(model, data) { super(model, data); }
+		}
+
+		class TestModel extends Model {
+			create(data) { return new TestDocument(this, data); }
+		}
+
+		const testModel = new TestModel();
+		const docData = { foo: 'bar' };
+
+		testModel.hook('post-init', function(doc) {
+			expect(doc.getData()).to.deep.equal(docData);
+			expect(this).to.equal(testModel);
+			doc.getData().biz = 'baz';
+		});
+
+		const doc = testModel.create(docData);
+		expect(doc.getData().biz).to.equal('baz');
+	});
 
 	it('should move internal id to the instance', function() {
 		let model = createModel('testings', { foo: Number });
