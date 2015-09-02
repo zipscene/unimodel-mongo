@@ -6,7 +6,6 @@ const testScaffold = require('./lib/mongo-scaffold');
 chai.use(require('chai-as-promised'));
 
 describe('UnimongoError', function() {
-
 	beforeEach(testScaffold.resetAndConnect);
 
 	it('should parse error on duplicated id', function() {
@@ -54,7 +53,6 @@ describe('UnimongoError', function() {
 
 		return expect(promise).to.be.rejectedWith(UnimongoError);
 	});
-
 });
 
 
