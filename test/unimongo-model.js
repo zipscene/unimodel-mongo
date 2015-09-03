@@ -290,7 +290,8 @@ it('should not fail if the collection already exists', function() {
 				{ foo: 'a', bar: 'b', baz: 3 },
 				{ foo: 'b', bar: 'a', baz: 4 },
 				{ foo: 'b', bar: 'b', baz: 5 },
-				{ foo: 'b', bar: 'b', baz: 6 }
+				{ foo: 'b', bar: 'b', baz: 6 },
+				{ foo: 'b', baz: 6 }
 			])
 			.then(() => {
 				return model.aggregate({
@@ -329,14 +330,12 @@ it('should not fail if the collection already exists', function() {
 			.then((result) => {
 				let expected = [
 					{ key: [ 'a' ], total: 3 },
-					{ key: [ 'b' ], total: 3 }
+					{ key: [ 'b' ], total: 4 }
 				].sort(keySort);
 				expect(result).to.deep.equal(expected);
 			})
 			.then(() => {
-				return model.aggregateMulti({
-					foo: 'a'
-				}, {
+				return model.aggregateMulti({}, {
 					one: {
 						groupBy: [ {
 							field: 'foo'
@@ -344,6 +343,12 @@ it('should not fail if the collection already exists', function() {
 					},
 					two: {
 						stats: {
+							foo: {
+								count: true
+							},
+							bar: {
+								count: true
+							},
 							baz: {
 								count: true,
 								avg: true
@@ -353,7 +358,7 @@ it('should not fail if the collection already exists', function() {
 					three: {
 						groupBy: 'bar',
 						stats: {
-							bar: {
+							foo: {
 								count: true,
 								min: true,
 								max: true
@@ -364,17 +369,49 @@ it('should not fail if the collection already exists', function() {
 				});
 			})
 			.then((result) => {
-				console.log(result);
-				// console.log(JSON.stringify(result, null, 2));
-
-				// expect(result).to.deep.equal({
-				// 	stats: {
-				// 		bar: {
-				// 			count: 2
-				// 		}
-				// 	},
-				// 	total: 2
-				// });
+				let expected = {
+					one: [ {
+						key: [ 'a' ]
+					}, {
+						key: [ 'b' ]
+					} ],
+					two: {
+						stats: {
+							foo: {
+								count: 7
+							},
+							bar: {
+								count: 6
+							},
+							baz: {
+								count: 7,
+								avg: 27 / 7
+							}
+						}
+					},
+					three: [ {
+						key: [ 'a' ],
+						stats: {
+							foo: {
+								count: 2,
+								min: 'a',
+								max: 'b'
+							}
+						},
+						total: 2
+					}, {
+						key: [ 'b' ],
+						stats: {
+							foo: {
+								count: 4,
+								min: 'a',
+								max: 'b'
+							}
+						},
+						total: 4
+					} ],
+				};
+				expect(result).to.deep.equal(expected);
 			});
 	});
 });
