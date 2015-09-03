@@ -5,15 +5,23 @@ const testScaffold = require('./lib/mongo-scaffold');
 
 chai.use(require('chai-as-promised'));
 
+const keySort = (a, b) => {
+	let aString = ''+a.key;
+	let bString = ''+b.key;
+	if (aString > bString) return 1;
+	if (aString < bString) return -1;
+	return 0;
+};
+
 describe('UnimongoModel', function() {
-	beforeEach(testScaffold.resetAndConnect);
+beforeEach(testScaffold.resetAndConnect);
 
-	it('should create the collection when it doesnt exist', function() {
-		let model = createModel('testings', { foo: String });
-		return model.collectionPromise;
-	});
+it('should create the collection when it doesnt exist', function() {
+let model = createModel('testings', { foo: String });
+return model.collectionPromise;
+});
 
-	it('should not fail if the collection already exists', function() {
+it('should not fail if the collection already exists', function() {
 		let model1 = createModel('testings', { foo: String });
 		return model1.collectionPromise
 			.then(() => {
@@ -279,8 +287,10 @@ describe('UnimongoModel', function() {
 		return model.insertMulti([
 				{ foo: 'a', bar: 'a', baz: 1 },
 				{ foo: 'a', bar: 'b', baz: 2 },
-				{ foo: 'b', bar: 'a', baz: 3 },
-				{ foo: 'b', bar: 'b', baz: 4 }
+				{ foo: 'a', bar: 'b', baz: 3 },
+				{ foo: 'b', bar: 'a', baz: 4 },
+				{ foo: 'b', bar: 'b', baz: 5 },
+				{ foo: 'b', bar: 'b', baz: 6 }
 			])
 			.then(() => {
 				return model.aggregate({
@@ -301,14 +311,27 @@ describe('UnimongoModel', function() {
 				expect(result).to.deep.equal({
 					stats: {
 						baz: {
-							count: 2,
-							avg: 1.5,
+							count: 3,
+							avg: 2,
 							min: 1,
-							max: 2
+							max: 3
 						}
 					},
-					total: 2
+					total: 3
 				});
+			})
+			.then(() => {
+				return model.aggregate({}, {
+					groupBy: 'foo',
+					total: true
+				});
+			})
+			.then((result) => {
+				let expected = [
+					{ key: [ 'a' ], total: 3 },
+					{ key: [ 'b' ], total: 3 }
+				].sort(keySort);
+				expect(result).to.deep.equal(expected);
 			})
 			.then(() => {
 				return model.aggregateMulti({
@@ -341,7 +364,7 @@ describe('UnimongoModel', function() {
 				});
 			})
 			.then((result) => {
-				// console.log(result);
+				console.log(result);
 				// console.log(JSON.stringify(result, null, 2));
 
 				// expect(result).to.deep.equal({
