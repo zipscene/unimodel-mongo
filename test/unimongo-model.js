@@ -270,24 +270,44 @@ describe('UnimongoModel', function() {
 	});
 
 	it('should run aggregates', function() {
-		let model = createModel('testings', { foo: String, bar: String });
+		let model = createModel('testings', {
+			foo: String,
+			bar: String,
+			baz: Number
+		});
 
 		return model.insertMulti([
-				{ foo: 'a', bar: 'a' },
-				{ foo: 'a', bar: 'b' },
-				{ foo: 'b', bar: 'a' },
-				{ foo: 'b', bar: 'b' }
+				{ foo: 'a', bar: 'a', baz: 1 },
+				{ foo: 'a', bar: 'b', baz: 2 },
+				{ foo: 'b', bar: 'a', baz: 3 },
+				{ foo: 'b', bar: 'b', baz: 4 }
 			])
 			.then(() => {
 				return model.aggregate({
 					foo: 'a'
 				}, {
 					stats: {
-						bar: {
-							count: true
+						baz: {
+							count: true,
+							avg: true,
+							min: true,
+							max: true
 						}
 					},
 					total: true
+				});
+			})
+			.then((result) => {
+				expect(result).to.deep.equal({
+					stats: {
+						baz: {
+							count: 2,
+							avg: 1.5,
+							min: 1,
+							max: 2
+						}
+					},
+					total: 2
 				});
 			})
 			.then(() => {
@@ -300,11 +320,18 @@ describe('UnimongoModel', function() {
 						} ]
 					},
 					two: {
+						stats: {
+							baz: {
+								count: true,
+								avg: true
+							}
+						}
+					},
+					three: {
 						groupBy: 'bar',
 						stats: {
 							bar: {
 								count: true,
-								avg: true,
 								min: true,
 								max: true
 							}
@@ -312,6 +339,19 @@ describe('UnimongoModel', function() {
 						total: true
 					}
 				});
+			})
+			.then((result) => {
+				// console.log(result);
+				// console.log(JSON.stringify(result, null, 2));
+
+				// expect(result).to.deep.equal({
+				// 	stats: {
+				// 		bar: {
+				// 			count: 2
+				// 		}
+				// 	},
+				// 	total: 2
+				// });
 			});
 	});
 });
