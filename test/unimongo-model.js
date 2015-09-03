@@ -277,7 +277,7 @@ it('should not fail if the collection already exists', function() {
 			});
 	});
 
-	it('should run aggregates', function() {
+	it.only('should run aggregates', function() {
 		let model = createModel('testings', {
 			foo: String,
 			bar: String,
@@ -390,6 +390,16 @@ it('should not fail if the collection already exists', function() {
 						}
 					},
 					three: [ {
+						key: [ null ],
+						stats: {
+							foo: {
+								count: 1,
+								min: 'b',
+								max: 'b'
+							}
+						},
+						total: 1
+					}, {
 						key: [ 'a' ],
 						stats: {
 							foo: {
