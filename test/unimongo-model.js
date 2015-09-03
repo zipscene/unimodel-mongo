@@ -6,7 +6,6 @@ const testScaffold = require('./lib/mongo-scaffold');
 chai.use(require('chai-as-promised'));
 
 describe('UnimongoModel', function() {
-
 	beforeEach(testScaffold.resetAndConnect);
 
 	it('should create the collection when it doesnt exist', function() {
@@ -270,4 +269,49 @@ describe('UnimongoModel', function() {
 			});
 	});
 
+	it('should run aggregates', function() {
+		let model = createModel('testings', { foo: String, bar: String });
+
+		return model.insertMulti([
+				{ foo: 'a', bar: 'a' },
+				{ foo: 'a', bar: 'b' },
+				{ foo: 'b', bar: 'a' },
+				{ foo: 'b', bar: 'b' }
+			])
+			.then(() => {
+				return model.aggregate({
+					foo: 'a'
+				}, {
+					stats: {
+						bar: {
+							count: true
+						}
+					},
+					total: true
+				});
+			})
+			.then(() => {
+				return model.aggregateMulti({
+					foo: 'a'
+				}, {
+					one: {
+						groupBy: [ {
+							field: 'foo'
+						} ]
+					},
+					two: {
+						groupBy: 'bar',
+						stats: {
+							bar: {
+								count: true,
+								avg: true,
+								min: true,
+								max: true
+							}
+						},
+						total: true
+					}
+				});
+			});
+	});
 });
