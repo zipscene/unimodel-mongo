@@ -278,7 +278,7 @@ describe('UnimongoModel', function() {
 			});
 	});
 
-	it('should run aggregates', function() {
+	it('should run groupd and ungrouped aggregates with stats', function() {
 		let model = createModel('testings', {
 			foo: String,
 			bar: String,
@@ -386,7 +386,7 @@ describe('UnimongoModel', function() {
 			});
 	});
 
-	it('should run interval aggregates', function() {
+	it('should run aggregates with intervals', function() {
 		let model = createModel('testings', {
 			foo: Number,
 			bar: String,
@@ -451,6 +451,53 @@ describe('UnimongoModel', function() {
 				};
 
 				expect(wrapper).to.throw(XError);
+			});
+	});
+
+	it('should run aggregates with time components', function() {
+		let model = createModel('testings', {
+			foo: Number,
+			bar: String,
+			baz: Date
+		});
+
+		return model.insertMulti([
+			{ foo: 0, bar: 'a', baz: new Date('2000') },
+			{ foo: 1, bar: 'b', baz: new Date('2001') },
+			{ foo: 2, bar: 'b', baz: new Date('2002') },
+			{ foo: 3, bar: 'a', baz: new Date('2003') },
+			{ foo: 4, bar: 'b', baz: new Date('2004') },
+			{ foo: 5, bar: 'b', baz: new Date('2005') },
+			{ foo: 5, baz: new Date('2005', '06') }
+		])
+			.then(() => {
+				return model.aggregate({}, {
+					groupBy: [ { field: 'baz', timeComponent: 'year' } ],
+					total: true
+				});
+			})
+			.then((result) => {
+				expect(result).to.deep.equal([
+					{
+						key: [ '2000-01-01T00:00:00Z' ],
+						total: 1
+					}, {
+						key: [ '2001-01-01T00:00:00Z' ],
+						total: 1
+					}, {
+						key: [ '2002-01-01T00:00:00Z' ],
+						total: 1
+					}, {
+						key: [ '2003-01-01T00:00:00Z' ],
+						total: 1
+					}, {
+						key: [ '2004-01-01T00:00:00Z' ],
+						total: 1
+					}, {
+						key: [ '2005-01-01T00:00:00Z' ],
+						total: 2
+					}
+				]);
 			});
 	});
 
