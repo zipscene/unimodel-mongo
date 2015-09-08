@@ -14,14 +14,14 @@ const keySort = (a, b) => {
 };
 
 describe('UnimongoModel', function() {
-beforeEach(testScaffold.resetAndConnect);
+	beforeEach(testScaffold.resetAndConnect);
 
-it('should create the collection when it doesnt exist', function() {
-let model = createModel('testings', { foo: String });
-return model.collectionPromise;
-});
+	it('should create the collection when it doesnt exist', function() {
+		let model = createModel('testings', { foo: String });
+		return model.collectionPromise;
+	});
 
-it('should not fail if the collection already exists', function() {
+	it('should not fail if the collection already exists', function() {
 		let model1 = createModel('testings', { foo: String });
 		return model1.collectionPromise
 			.then(() => {
@@ -277,7 +277,7 @@ it('should not fail if the collection already exists', function() {
 			});
 	});
 
-	it.only('should run aggregates', function() {
+	it('should run aggregates', function() {
 		let model = createModel('testings', {
 			foo: String,
 			bar: String,
@@ -285,14 +285,14 @@ it('should not fail if the collection already exists', function() {
 		});
 
 		return model.insertMulti([
-				{ foo: 'a', bar: 'a', baz: 1 },
-				{ foo: 'a', bar: 'b', baz: 2 },
-				{ foo: 'a', bar: 'b', baz: 3 },
-				{ foo: 'b', bar: 'a', baz: 4 },
-				{ foo: 'b', bar: 'b', baz: 5 },
-				{ foo: 'b', bar: 'b', baz: 6 },
-				{ foo: 'b', baz: 6 }
-			])
+			{ foo: 'a', bar: 'a', baz: 1 },
+			{ foo: 'a', bar: 'b', baz: 2 },
+			{ foo: 'a', bar: 'b', baz: 3 },
+			{ foo: 'b', bar: 'a', baz: 4 },
+			{ foo: 'b', bar: 'b', baz: 5 },
+			{ foo: 'b', bar: 'b', baz: 6 },
+			{ foo: 'b', baz: 6 }
+		])
 			.then(() => {
 				return model.aggregate({
 					foo: 'a'
@@ -419,7 +419,7 @@ it('should not fail if the collection already exists', function() {
 							}
 						},
 						total: 4
-					} ],
+					} ]
 				};
 				expect(result).to.deep.equal(expected);
 			});
