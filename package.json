@@ -19,6 +19,7 @@
     "crisphooks": "^2.0.0",
     "inheritz": "^1.2.0",
     "lodash": "^3.10.0",
+    "moment": "^2.10.6",
     "mongodb": "^2.0.39",
     "pasync": "^1.4.0",
     "xerror": "^1.0.0",

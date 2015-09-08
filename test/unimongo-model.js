@@ -285,12 +285,12 @@ describe('UnimongoModel', function() {
 		});
 
 		return model.insertMulti([
-			{ foo: 'a', bar: 'a', baz: 1 },
-			{ foo: 'a', bar: 'b', baz: 2 },
-			{ foo: 'a', bar: 'b', baz: 3 },
-			{ foo: 'b', bar: 'a', baz: 4 },
-			{ foo: 'b', bar: 'b', baz: 5 },
-			{ foo: 'b', bar: 'b', baz: 6 },
+			{ foo: 'a', bar: 'x', baz: 1 },
+			{ foo: 'a', bar: 'y', baz: 2 },
+			{ foo: 'a', bar: 'y', baz: 3 },
+			{ foo: 'b', bar: 'x', baz: 4 },
+			{ foo: 'b', bar: 'y', baz: 5 },
+			{ foo: 'b', bar: 'y', baz: 6 },
 			{ foo: 'b', baz: 6 }
 		])
 			.then(() => {
@@ -400,7 +400,7 @@ describe('UnimongoModel', function() {
 						},
 						total: 1
 					}, {
-						key: [ 'a' ],
+						key: [ 'x' ],
 						stats: {
 							foo: {
 								count: 2,
@@ -410,7 +410,7 @@ describe('UnimongoModel', function() {
 						},
 						total: 2
 					}, {
-						key: [ 'b' ],
+						key: [ 'y' ],
 						stats: {
 							foo: {
 								count: 4,
@@ -433,14 +433,14 @@ describe('UnimongoModel', function() {
 		});
 
 		return model.insertMulti([
-				{ foo: 0, bar: 'a', baz: new Date('2000') },
-				{ foo: 1, bar: 'b', baz: new Date('2001') },
-				{ foo: 2, bar: 'b', baz: new Date('2002') },
-				{ foo: 3, bar: 'a', baz: new Date('2003') },
-				{ foo: 4, bar: 'b', baz: new Date('2004') },
-				{ foo: 5, bar: 'b', baz: new Date('2005') },
-				{ foo: 5, baz: new Date('2005', '06') }
-			])
+			{ foo: 0, bar: 'a', baz: new Date('2000') },
+			{ foo: 1, bar: 'b', baz: new Date('2001') },
+			{ foo: 2, bar: 'b', baz: new Date('2002') },
+			{ foo: 3, bar: 'a', baz: new Date('2003') },
+			{ foo: 4, bar: 'b', baz: new Date('2004') },
+			{ foo: 5, bar: 'b', baz: new Date('2005') },
+			{ foo: 5, baz: new Date('2005', '06') }
+		])
 			.then(() => {
 				return model.aggregate({}, {
 					groupBy: [ {
@@ -461,6 +461,92 @@ describe('UnimongoModel', function() {
 					}, {
 						key: [ 4 ],
 						total: 3
+					}
+				]);
+			})
+			.then(() => {
+				return model.aggregate({}, {
+					groupBy: [ {
+						field: 'foo',
+						interval: 2,
+						base: 1
+					} ],
+					total: true
+				});
+			})
+			.then((result) => {
+				expect(result).to.deep.equal([
+					{
+						key: [ 1 ],
+						total: 2
+					}, {
+						key: [ 3 ],
+						total: 2
+					}, {
+						key: [ 5 ],
+						total: 3
+					}
+				]);
+			})
+			.then(() => {
+				return model.aggregate({}, {
+					groupBy: [ {
+						field: 'baz'
+						// interval: 'P1Y'
+					} ],
+					total: true
+				});
+			})
+			.then((result) => {
+				console.log(result);
+			});
+	});
+
+	it('should group aggregates by multiple fields', function() {
+		let model = createModel('testings', {
+			foo: String,
+			bar: String,
+			baz: Number
+		});
+
+		return model.insertMulti([
+			{ foo: 'a', bar: 'x', baz: 1 },
+			{ foo: 'a', bar: 'y', baz: 2 },
+			{ foo: 'a', bar: 'y', baz: 3 },
+			{ foo: 'b', bar: 'x', baz: 4 },
+			{ foo: 'b', bar: 'y', baz: 5 },
+			{ foo: 'b', bar: 'y', baz: 6 },
+			{ foo: 'b', baz: 6 }
+		])
+			.then(() => {
+				return model.aggregate({}, {
+					groupBy: [
+						{ field: 'foo' },
+						'baz'
+					],
+					total: true
+				});
+			})
+			.then((result) => {
+				expect(result).to.deep.equal([
+					{
+						key: [ 'a', 1 ],
+						total: 1
+					}, {
+						key: [ 'a', 2 ],
+						total: 1
+					}, {
+						key: [ 'a', 3 ],
+						total: 1
+					}, {
+						key: [ 'b', 4 ],
+						total: 1
+					}, {
+						key: [ 'b', 5 ],
+						total: 1
+					}, {
+						key: [ 'b', 6 ],
+						total: 2
 					}
 				]);
 			});
