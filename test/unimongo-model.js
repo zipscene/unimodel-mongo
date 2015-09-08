@@ -424,4 +424,45 @@ describe('UnimongoModel', function() {
 				expect(result).to.deep.equal(expected);
 			});
 	});
+
+	it('should run interval aggregates', function() {
+		let model = createModel('testings', {
+			foo: Number,
+			bar: String,
+			baz: Date
+		});
+
+		return model.insertMulti([
+				{ foo: 0, bar: 'a', baz: new Date('2000') },
+				{ foo: 1, bar: 'b', baz: new Date('2001') },
+				{ foo: 2, bar: 'b', baz: new Date('2002') },
+				{ foo: 3, bar: 'a', baz: new Date('2003') },
+				{ foo: 4, bar: 'b', baz: new Date('2004') },
+				{ foo: 5, bar: 'b', baz: new Date('2005') },
+				{ foo: 5, baz: new Date('2005', '06') }
+			])
+			.then(() => {
+				return model.aggregate({}, {
+					groupBy: [ {
+						field: 'foo',
+						interval: 2
+					} ],
+					total: true
+				});
+			})
+			.then((result) => {
+				expect(result).to.deep.equal([
+					{
+						key: [ 0 ],
+						total: 2
+					}, {
+						key: [ 2 ],
+						total: 2
+					}, {
+						key: [ 4 ],
+						total: 3
+					}
+				]);
+			});
+	});
 });
