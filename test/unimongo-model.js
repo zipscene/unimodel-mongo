@@ -1,4 +1,5 @@
 const chai = require('chai');
+const XError = require('xerror');
 const expect = chai.expect;
 const { UnimongoDocument, createModel } = require('../lib');
 const testScaffold = require('./lib/mongo-scaffold');
@@ -281,16 +282,17 @@ describe('UnimongoModel', function() {
 		let model = createModel('testings', {
 			foo: String,
 			bar: String,
-			baz: Number
+			baz: Number,
+			qux: Date
 		});
 
 		return model.insertMulti([
-			{ foo: 'a', bar: 'x', baz: 1 },
-			{ foo: 'a', bar: 'y', baz: 2 },
-			{ foo: 'a', bar: 'y', baz: 3 },
-			{ foo: 'b', bar: 'x', baz: 4 },
-			{ foo: 'b', bar: 'y', baz: 5 },
-			{ foo: 'b', bar: 'y', baz: 6 },
+			{ foo: 'a', bar: 'x', baz: 1, qux: new Date('2000') },
+			{ foo: 'a', bar: 'y', baz: 2, qux: new Date('2000') },
+			{ foo: 'a', bar: 'y', baz: 3, qux: new Date('2010') },
+			{ foo: 'b', bar: 'x', baz: 4, qux: new Date('2010') },
+			{ foo: 'b', bar: 'y', baz: 5, qux: new Date('2020') },
+			{ foo: 'b', bar: 'y', baz: 6, qux: new Date('2020') },
 			{ foo: 'b', baz: 6 }
 		])
 			.then(() => {
@@ -298,7 +300,8 @@ describe('UnimongoModel', function() {
 					foo: 'a'
 				}, {
 					stats: {
-						baz: { count: true, avg: true, min: true, max: true }
+						baz: { count: true, avg: true, min: true, max: true },
+						qux: { min: true, max: true }
 					},
 					total: true
 				});
@@ -306,7 +309,8 @@ describe('UnimongoModel', function() {
 			.then((result) => {
 				expect(result).to.deep.equal({
 					stats: {
-						baz: { count: 3, avg: 2, min: 1, max: 3 }
+						baz: { count: 3, avg: 2, min: 1, max: 3 },
+						qux: { min: new Date('2000'), max: new Date('2010') }
 					},
 					total: 3
 				});
@@ -439,14 +443,14 @@ describe('UnimongoModel', function() {
 				]);
 			})
 			.then(() => {
-				return model.aggregate({}, {
-					groupBy: [ { field: 'baz' } ],
-					// groupBy: [ { field: 'baz', interval: 'P1Y' } ],
-					total: true
-				});
-			})
-			.then((result) => {
-				console.log(result);
+				let wrapper = () => {
+					return model.aggregate({}, {
+						groupBy: [ { field: 'baz', interval: 'P1Y' } ],
+						total: true
+					});
+				};
+
+				expect(wrapper).to.throw(XError);
 			});
 	});
 
