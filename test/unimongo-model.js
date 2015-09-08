@@ -298,12 +298,7 @@ describe('UnimongoModel', function() {
 					foo: 'a'
 				}, {
 					stats: {
-						baz: {
-							count: true,
-							avg: true,
-							min: true,
-							max: true
-						}
+						baz: { count: true, avg: true, min: true, max: true }
 					},
 					total: true
 				});
@@ -311,12 +306,7 @@ describe('UnimongoModel', function() {
 			.then((result) => {
 				expect(result).to.deep.equal({
 					stats: {
-						baz: {
-							count: 3,
-							avg: 2,
-							min: 1,
-							max: 3
-						}
+						baz: { count: 3, avg: 2, min: 1, max: 3 }
 					},
 					total: 3
 				});
@@ -337,32 +327,19 @@ describe('UnimongoModel', function() {
 			.then(() => {
 				return model.aggregateMulti({}, {
 					one: {
-						groupBy: [ {
-							field: 'foo'
-						} ]
+						groupBy: [ { field: 'foo' } ]
 					},
 					two: {
 						stats: {
-							foo: {
-								count: true
-							},
-							bar: {
-								count: true
-							},
-							baz: {
-								count: true,
-								avg: true
-							}
+							foo: { count: true },
+							bar: { count: true },
+							baz: { count: true, avg: true }
 						}
 					},
 					three: {
 						groupBy: 'bar',
 						stats: {
-							foo: {
-								count: true,
-								min: true,
-								max: true
-							}
+							foo: { count: true, min: true, max: true }
 						},
 						total: true
 					}
@@ -370,53 +347,33 @@ describe('UnimongoModel', function() {
 			})
 			.then((result) => {
 				let expected = {
-					one: [ {
-						key: [ 'a' ]
-					}, {
-						key: [ 'b' ]
-					} ],
+					one: [
+						{ key: [ 'a' ] },
+						{ key: [ 'b' ] }
+					],
 					two: {
 						stats: {
-							foo: {
-								count: 7
-							},
-							bar: {
-								count: 6
-							},
-							baz: {
-								count: 7,
-								avg: 27 / 7
-							}
+							foo: { count: 7 },
+							bar: { count: 6 },
+							baz: { count: 7, avg: 27 / 7 }
 						}
 					},
 					three: [ {
 						key: [ null ],
 						stats: {
-							foo: {
-								count: 1,
-								min: 'b',
-								max: 'b'
-							}
+							foo: { count: 1, min: 'b', max: 'b' }
 						},
 						total: 1
 					}, {
 						key: [ 'x' ],
 						stats: {
-							foo: {
-								count: 2,
-								min: 'a',
-								max: 'b'
-							}
+							foo: { count: 2, min: 'a', max: 'b' }
 						},
 						total: 2
 					}, {
 						key: [ 'y' ],
 						stats: {
-							foo: {
-								count: 4,
-								min: 'a',
-								max: 'b'
-							}
+							foo: { count: 4, min: 'a', max: 'b' }
 						},
 						total: 4
 					} ]
@@ -443,10 +400,7 @@ describe('UnimongoModel', function() {
 		])
 			.then(() => {
 				return model.aggregate({}, {
-					groupBy: [ {
-						field: 'foo',
-						interval: 2
-					} ],
+					groupBy: [ { field: 'foo', interval: 2 } ],
 					total: true
 				});
 			})
@@ -466,11 +420,7 @@ describe('UnimongoModel', function() {
 			})
 			.then(() => {
 				return model.aggregate({}, {
-					groupBy: [ {
-						field: 'foo',
-						interval: 2,
-						base: 1
-					} ],
+					groupBy: [ { field: 'foo', interval: 2, base: 1 } ],
 					total: true
 				});
 			})
@@ -490,10 +440,8 @@ describe('UnimongoModel', function() {
 			})
 			.then(() => {
 				return model.aggregate({}, {
-					groupBy: [ {
-						field: 'baz'
-						// interval: 'P1Y'
-					} ],
+					groupBy: [ { field: 'baz' } ],
+					// groupBy: [ { field: 'baz', interval: 'P1Y' } ],
 					total: true
 				});
 			})
@@ -520,10 +468,7 @@ describe('UnimongoModel', function() {
 		])
 			.then(() => {
 				return model.aggregate({}, {
-					groupBy: [
-						{ field: 'foo' },
-						'baz'
-					],
+					groupBy: [ { field: 'foo' }, 'baz' ],
 					total: true
 				});
 			})
