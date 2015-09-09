@@ -386,7 +386,58 @@ describe('UnimongoModel', function() {
 			});
 	});
 
-	it('should run aggregates with intervals', function() {
+	it('should run aggregates with ranges', function() {
+		let model = createModel('testings', {
+			foo: Number,
+			bar: String,
+			baz: Date
+		});
+
+		return model.insertMulti([
+			{ foo: 0, baz: new Date('2000-04-04T10:10:10Z') },
+			{ foo: 0, baz: new Date('2000-04-04T10:10:20Z') },
+			{ foo: 1, baz: new Date('2000-02') },
+			{ foo: 2, baz: new Date('2000-10') },
+			{ foo: 3, baz: new Date('2001-02') },
+			{ foo: 4, baz: new Date('2001-08') },
+			{ foo: 5, baz: new Date('2001-11-05') },
+			{ foo: 5, baz: new Date('2001-11-25') },
+			{ foo: 5, baz: new Date('2007-02-25') }
+		])
+			.then(() => {
+				return model.aggregate({}, {
+					groupBy: [ {
+						field: 'foo',
+						ranges: [
+							{ end: 1 },
+							{ start: 1, end: 3 },
+							{ start: 3, end: 4 },
+							{ start: 4 }
+						]
+					} ],
+					total: true
+				});
+			})
+			.then((result) => {
+				expect(result).to.deep.equal([
+					{
+						key: [ 0 ],
+						total: 2
+					}, {
+						key: [ 1 ],
+						total: 2
+					}, {
+						key: [ 2 ],
+						total: 1
+					}, {
+						key: [ 3 ],
+						total: 4
+					}
+				]);
+			});
+	});
+
+	it.only('should run aggregates with intervals', function() {
 		let model = createModel('testings', {
 			foo: Number,
 			bar: String,
@@ -429,18 +480,18 @@ describe('UnimongoModel', function() {
 				});
 			})
 			.then((result) => {
-				// expect(result).to.deep.equal([
-				// 	{
-				// 		key: [ -1 ],
-				// 		total: 2
-				// 	}, {
-				// 		key: [ 2 ],
-				// 		total: 3
-				// 	}, {
-				// 		key: [ 5 ],
-				// 		total: 2
-				// 	}
-				// ]);
+				expect(result).to.deep.equal([
+					{
+						key: [ -1 ],
+						total: 2
+					}, {
+						key: [ 2 ],
+						total: 3
+					}, {
+						key: [ 5 ],
+						total: 2
+					}
+				]);
 			})
 			.then(() => {
 				let wrapper = () => {
