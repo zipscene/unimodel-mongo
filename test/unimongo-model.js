@@ -461,6 +461,32 @@ describe('UnimongoModel', function() {
 						total: 3
 					}
 				]);
+			})
+			.then(() => {
+				return model.aggregate({}, {
+					groupBy: [ {
+						field: 'foo',
+						ranges: [ 1, 3, 4 ]
+					} ],
+					total: true
+				});
+			})
+			.then((result) => {
+				expect(result).to.deep.equal([
+					{
+						key: [ 0 ],
+						total: 2
+					}, {
+						key: [ 1 ],
+						total: 2
+					}, {
+						key: [ 2 ],
+						total: 1
+					}, {
+						key: [ 3 ],
+						total: 4
+					}
+				]);
 			});
 	});
 
