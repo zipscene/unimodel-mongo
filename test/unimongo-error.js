@@ -54,5 +54,3 @@ describe('UnimongoError', function() {
 		return expect(promise).to.be.rejectedWith(UnimongoError);
 	});
 });
-
-
