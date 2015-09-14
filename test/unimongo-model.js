@@ -7,10 +7,10 @@ const testScaffold = require('./lib/mongo-scaffold');
 chai.use(require('chai-as-promised'));
 
 const keySort = (a, b) => {
-	let aString = ''+a.key;
-	let bString = ''+b.key;
-	if (aString > bString) return 1;
-	if (aString < bString) return -1;
+	for (let key in a.key) {
+		if (a.key[key] > b.key[key] || typeof b.key[key] === 'undefined') return 1;
+		if (a.key[key] < b.key[key]) return -1;
+	}
 	return 0;
 };
 
@@ -498,13 +498,20 @@ describe('UnimongoModel', function() {
 		});
 
 		return model.insertMulti([
+			{ foo: -6, bar: 'b', baz: new Date('2005') },
+			{ foo: -5, bar: 'b', baz: new Date('2005') },
+			{ foo: -4, bar: 'b', baz: new Date('2004') },
+			{ foo: -3, bar: 'a', baz: new Date('2003') },
+			{ foo: -2, bar: 'b', baz: new Date('2002') },
+			{ foo: -1, bar: 'b', baz: new Date('2001') },
 			{ foo: 0, bar: 'a', baz: new Date('2000') },
 			{ foo: 1, bar: 'b', baz: new Date('2001') },
 			{ foo: 2, bar: 'b', baz: new Date('2002') },
 			{ foo: 3, bar: 'a', baz: new Date('2003') },
 			{ foo: 4, bar: 'b', baz: new Date('2004') },
 			{ foo: 5, bar: 'b', baz: new Date('2005') },
-			{ foo: 5, baz: new Date('2005', '06') }
+			{ foo: 5, baz: new Date('2005', '06') },
+			{ foo: 6, bar: 'b', baz: new Date('2005') }
 		])
 			.then(() => {
 				return model.aggregate({}, {
@@ -514,17 +521,14 @@ describe('UnimongoModel', function() {
 			})
 			.then((result) => {
 				expect(result).to.deep.equal([
-					{
-						key: [ 0 ],
-						total: 2
-					}, {
-						key: [ 2 ],
-						total: 2
-					}, {
-						key: [ 4 ],
-						total: 3
-					}
-				]);
+					{ key: [ -6 ], total: 2 },
+					{ key: [ -4 ], total: 2 },
+					{ key: [ -2 ], total: 2 },
+					{ key: [ 0 ], total: 2 },
+					{ key: [ 2 ], total: 2 },
+					{ key: [ 4 ], total: 3 },
+					{ key: [ 6 ], total: 1 }
+				].sort(keySort));
 			})
 			.then(() => {
 				return model.aggregate({}, {
@@ -534,17 +538,12 @@ describe('UnimongoModel', function() {
 			})
 			.then((result) => {
 				expect(result).to.deep.equal([
-					{
-						key: [ -1 ],
-						total: 2
-					}, {
-						key: [ 2 ],
-						total: 3
-					}, {
-						key: [ 5 ],
-						total: 2
-					}
-				]);
+					{ key: [ -7 ], total: 2 },
+					{ key: [ -4 ], total: 3 },
+					{ key: [ -1 ], total: 3 },
+					{ key: [ 2 ], total: 3 },
+					{ key: [ 5 ], total: 3 }
+				].sort(keySort));
 			})
 			.then(() => {
 				let wrapper = () => {
