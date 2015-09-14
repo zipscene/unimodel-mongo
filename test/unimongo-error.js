@@ -6,7 +6,6 @@ const testScaffold = require('./lib/mongo-scaffold');
 chai.use(require('chai-as-promised'));
 
 describe('UnimongoError', function() {
-
 	beforeEach(testScaffold.resetAndConnect);
 
 	it('should parse error on duplicated id', function() {
@@ -16,7 +15,7 @@ describe('UnimongoError', function() {
 		let promise = model.collectionPromise
 			.then((_collection) => collection = _collection)
 			.then(() => collection.insert({ _id: 'some id', foo: 'bar' }))
-			.then((result) => collection.insert({ _id: 'some id', foo: 'baz' }))
+			.then(() => collection.insert({ _id: 'some id', foo: 'baz' }))
 			.catch((err) => {
 				throw UnimongoError.fromMongoError(err, model);
 			})
@@ -39,7 +38,7 @@ describe('UnimongoError', function() {
 		let promise = model.collectionPromise
 			.then((_collection) => collection = _collection)
 			.then(() => collection.insert({ foo: 'one', bar: 'two' }))
-			.then((result) => collection.insert({ foo: 'one', bar: 'two' }))
+			.then(() => collection.insert({ foo: 'one', bar: 'two' }))
 			.catch((err) => {
 				throw UnimongoError.fromMongoError(err, model);
 			})
@@ -54,7 +53,4 @@ describe('UnimongoError', function() {
 
 		return expect(promise).to.be.rejectedWith(UnimongoError);
 	});
-
 });
-
-

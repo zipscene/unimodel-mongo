@@ -1,7 +1,6 @@
 let spawn = require('child_process').spawn;
 
 describe('Linter', function() {
-
 	it('should not have any linter problems', function(done) {
 
 		this.timeout(60000);
@@ -40,5 +39,4 @@ describe('Linter', function() {
 		});
 
 	});
-
 });

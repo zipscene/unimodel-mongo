@@ -5,7 +5,6 @@ const pasync = require('pasync');
 const testScaffold = require('./lib/mongo-scaffold');
 
 describe('UnimongoDb', function() {
-
 	it('should connect to mongo', function(done) {
 		let testdb = new UnimongoDb();
 		testdb.connect(testScaffold.config.uri)
@@ -29,7 +28,4 @@ describe('UnimongoDb', function() {
 		});
 		testdb.connect(testScaffold.config.nonexistantUri);
 	});
-
 });
-
-

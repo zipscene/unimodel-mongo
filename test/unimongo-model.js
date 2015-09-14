@@ -1,12 +1,20 @@
 const chai = require('chai');
+const XError = require('xerror');
 const expect = chai.expect;
 const { UnimongoDocument, createModel } = require('../lib');
 const testScaffold = require('./lib/mongo-scaffold');
 
 chai.use(require('chai-as-promised'));
 
-describe('UnimongoModel', function() {
+const keySort = (a, b) => {
+	for (let key in a.key) {
+		if (a.key[key] > b.key[key] || typeof b.key[key] === 'undefined') return 1;
+		if (a.key[key] < b.key[key]) return -1;
+	}
+	return 0;
+};
 
+describe('UnimongoModel', function() {
 	beforeEach(testScaffold.resetAndConnect);
 
 	it('should create the collection when it doesnt exist', function() {
@@ -270,4 +278,444 @@ describe('UnimongoModel', function() {
 			});
 	});
 
+	it('should run groupd and ungrouped aggregates with stats', function() {
+		let model = createModel('testings', {
+			foo: String,
+			bar: String,
+			baz: Number,
+			qux: Date
+		});
+
+		return model.insertMulti([
+			{ foo: 'a', bar: 'x', baz: 1, qux: new Date('2000') },
+			{ foo: 'a', bar: 'y', baz: 2, qux: new Date('2000') },
+			{ foo: 'a', bar: 'y', baz: 3, qux: new Date('2010') },
+			{ foo: 'b', bar: 'x', baz: 4, qux: new Date('2010') },
+			{ foo: 'b', bar: 'y', baz: 5, qux: new Date('2020') },
+			{ foo: 'b', bar: 'y', baz: 6, qux: new Date('2020') },
+			{ foo: 'b', baz: 6 }
+		])
+			.then(() => {
+				return model.aggregate({
+					foo: 'a'
+				}, {
+					stats: {
+						baz: { count: true, avg: true, min: true, max: true },
+						qux: { min: true, max: true }
+					},
+					total: true
+				});
+			})
+			.then((result) => {
+				expect(result).to.deep.equal({
+					stats: {
+						baz: { count: 3, avg: 2, min: 1, max: 3 },
+						qux: { min: new Date('2000'), max: new Date('2010') }
+					},
+					total: 3
+				});
+			})
+			.then(() => {
+				return model.aggregate({}, {
+					groupBy: 'foo',
+					total: true
+				});
+			})
+			.then((result) => {
+				let expected = [
+					{ key: [ 'a' ], total: 3 },
+					{ key: [ 'b' ], total: 4 }
+				].sort(keySort);
+				expect(result).to.deep.equal(expected);
+			})
+			.then(() => {
+				return model.aggregateMulti({}, {
+					one: {
+						groupBy: [ { field: 'foo' } ]
+					},
+					two: {
+						stats: {
+							foo: { count: true },
+							bar: { count: true },
+							baz: { count: true, avg: true }
+						}
+					},
+					three: {
+						groupBy: 'bar',
+						stats: {
+							foo: { count: true, min: true, max: true }
+						},
+						total: true
+					}
+				});
+			})
+			.then((result) => {
+				let expected = {
+					one: [
+						{ key: [ 'a' ] },
+						{ key: [ 'b' ] }
+					],
+					two: {
+						stats: {
+							foo: { count: 7 },
+							bar: { count: 6 },
+							baz: { count: 7, avg: 27 / 7 }
+						}
+					},
+					three: [ {
+						key: [ null ],
+						stats: {
+							foo: { count: 1, min: 'b', max: 'b' }
+						},
+						total: 1
+					}, {
+						key: [ 'x' ],
+						stats: {
+							foo: { count: 2, min: 'a', max: 'b' }
+						},
+						total: 2
+					}, {
+						key: [ 'y' ],
+						stats: {
+							foo: { count: 4, min: 'a', max: 'b' }
+						},
+						total: 4
+					} ]
+				};
+				expect(result).to.deep.equal(expected);
+			});
+	});
+
+	it('should run aggregates with ranges', function() {
+		let model = createModel('testings', {
+			foo: Number,
+			bar: String,
+			baz: Date
+		});
+
+		return model.insertMulti([
+			{ foo: 0, baz: new Date('2000-04-04T10:10:10Z') },
+			{ foo: 0, baz: new Date('2000-04-04T10:10:20Z') },
+			{ foo: 1, baz: new Date('2000-02-01T00:00:00Z') },
+			{ foo: 2, baz: new Date('2000-10-01T00:00:00Z') },
+			{ foo: 3, baz: new Date('2001-02-01T00:00:00Z') },
+			{ foo: 4, baz: new Date('2001-08-01T00:00:00Z') },
+			{ foo: 5, baz: new Date('2001-11-05T00:00:00Z') },
+			{ foo: 5, baz: new Date('2001-11-25T00:00:00Z') },
+			{ foo: 5, baz: new Date('2007-02-25T00:00:00Z') }
+		])
+			.then(() => {
+				return model.aggregate({}, {
+					groupBy: [ {
+						field: 'foo',
+						ranges: [
+							{ end: 1 },
+							{ start: 1, end: 3 },
+							{ start: 3, end: 4 },
+							{ start: 4 }
+						]
+					} ],
+					total: true
+				});
+			})
+			.then((result) => {
+				expect(result).to.deep.equal([
+					{
+						key: [ 0 ],
+						total: 2
+					}, {
+						key: [ 1 ],
+						total: 2
+					}, {
+						key: [ 2 ],
+						total: 1
+					}, {
+						key: [ 3 ],
+						total: 4
+					}
+				]);
+			})
+			.then(() => {
+				return model.aggregate({}, {
+					groupBy: [ {
+						field: 'baz',
+						ranges: [
+							{ end: '2000-03-01T00:00:00Z' },
+							{ start: '2000-03-01T00:00:00Z', end: '2001-10-01T00:00:00Z' },
+							{ start: '2001-10-01T00:00:00Z' }
+						]
+					} ],
+					total: true
+				});
+			})
+			.then((result) => {
+				expect(result).to.deep.equal([
+					{
+						key: [ 0 ],
+						total: 1
+					}, {
+						key: [ 1 ],
+						total: 5
+					}, {
+						key: [ 2 ],
+						total: 3
+					}
+				]);
+			})
+			.then(() => {
+				return model.aggregate({}, {
+					groupBy: [ {
+						field: 'foo',
+						ranges: [ 1, 3, 4 ]
+					} ],
+					total: true
+				});
+			})
+			.then((result) => {
+				expect(result).to.deep.equal([
+					{
+						key: [ 0 ],
+						total: 2
+					}, {
+						key: [ 1 ],
+						total: 2
+					}, {
+						key: [ 2 ],
+						total: 1
+					}, {
+						key: [ 3 ],
+						total: 4
+					}
+				]);
+			});
+	});
+
+	it('should run aggregates with intervals', function() {
+		let model = createModel('testings', {
+			foo: Number,
+			bar: String,
+			baz: Date
+		});
+
+		return model.insertMulti([
+			{ foo: -6, bar: 'b', baz: new Date('2005') },
+			{ foo: -5, bar: 'b', baz: new Date('2005') },
+			{ foo: -4, bar: 'b', baz: new Date('2004') },
+			{ foo: -3, bar: 'a', baz: new Date('2003') },
+			{ foo: -2, bar: 'b', baz: new Date('2002') },
+			{ foo: -1, bar: 'b', baz: new Date('2001') },
+			{ foo: 0, bar: 'a', baz: new Date('2000') },
+			{ foo: 1, bar: 'b', baz: new Date('2001') },
+			{ foo: 2, bar: 'b', baz: new Date('2002') },
+			{ foo: 3, bar: 'a', baz: new Date('2003') },
+			{ foo: 4, bar: 'b', baz: new Date('2004') },
+			{ foo: 5, bar: 'b', baz: new Date('2005') },
+			{ foo: 5, baz: new Date('2005', '06') },
+			{ foo: 6, bar: 'b', baz: new Date('2005') }
+		])
+			.then(() => {
+				return model.aggregate({}, {
+					groupBy: [ { field: 'foo', interval: 2 } ],
+					total: true
+				});
+			})
+			.then((result) => {
+				expect(result).to.deep.equal([
+					{ key: [ -6 ], total: 2 },
+					{ key: [ -4 ], total: 2 },
+					{ key: [ -2 ], total: 2 },
+					{ key: [ 0 ], total: 2 },
+					{ key: [ 2 ], total: 2 },
+					{ key: [ 4 ], total: 3 },
+					{ key: [ 6 ], total: 1 }
+				].sort(keySort));
+			})
+			.then(() => {
+				return model.aggregate({}, {
+					groupBy: [ { field: 'foo', interval: 3, base: 2 } ],
+					total: true
+				});
+			})
+			.then((result) => {
+				expect(result).to.deep.equal([
+					{ key: [ -7 ], total: 2 },
+					{ key: [ -4 ], total: 3 },
+					{ key: [ -1 ], total: 3 },
+					{ key: [ 2 ], total: 3 },
+					{ key: [ 5 ], total: 3 }
+				].sort(keySort));
+			})
+			.then(() => {
+				let wrapper = () => {
+					return model.aggregate({}, {
+						groupBy: [ { field: 'baz', interval: 'P1Y' } ],
+						total: true
+					});
+				};
+
+				expect(wrapper).to.throw(XError);
+			});
+	});
+
+	it('should run aggregates with time components', function() {
+		let model = createModel('testings', {
+			foo: Number,
+			bar: String,
+			baz: Date
+		});
+
+		return model.insertMulti([
+			{ foo: 0, baz: new Date('2000-04-04T10:10:10Z') },
+			{ foo: 0, baz: new Date('2000-04-04T10:10:20Z') },
+			{ foo: 1, baz: new Date('2000-02') },
+			{ foo: 2, baz: new Date('2000-10') },
+			{ foo: 3, baz: new Date('2001-02') },
+			{ foo: 4, baz: new Date('2001-08') },
+			{ foo: 5, baz: new Date('2001-11-05') },
+			{ foo: 5, baz: new Date('2001-11-25') },
+			{ foo: 5, baz: new Date('2007-02-25') }
+		])
+			.then(() => {
+				return model.aggregate({}, {
+					groupBy: [ { field: 'baz', timeComponent: 'year' } ],
+					total: true
+				});
+			})
+			.then((result) => {
+				expect(result).to.deep.equal([
+					{
+						key: [ '2000-01-01T00:00:00Z' ],
+						total: 4
+					}, {
+						key: [ '2001-01-01T00:00:00Z' ],
+						total: 4
+					}, {
+						key: [ '2007-01-01T00:00:00Z' ],
+						total: 1
+					}
+				]);
+			})
+			.then(() => {
+				return model.aggregate({}, {
+					groupBy: [ { field: 'baz', timeComponent: 'year', timeComponentCount: 2 } ],
+					total: true
+				});
+			})
+			.then((result) => {
+				expect(result).to.deep.equal([
+					{
+						key: [ '2000-01-01T00:00:00Z' ],
+						total: 8
+					}, {
+						key: [ '2006-01-01T00:00:00Z' ],
+						total: 1
+					}
+				]);
+			})
+			.then(() => {
+				return model.aggregate({}, {
+					groupBy: [ { field: 'baz', timeComponent: 'month', timeComponentCount: 3 } ],
+					total: true
+				});
+			})
+			.then((result) => {
+				expect(result).to.deep.equal([
+					{
+						key: [ '2000-01-01T00:00:00Z' ],
+						total: 1
+					}, {
+						key: [ '2000-04-01T00:00:00Z' ],
+						total: 2
+					}, {
+						key: [ '2000-10-01T00:00:00Z' ],
+						total: 1
+					}, {
+						key: [ '2001-01-01T00:00:00Z' ],
+						total: 1
+					}, {
+						key: [ '2001-07-01T00:00:00Z' ],
+						total: 1
+					}, {
+						key: [ '2001-10-01T00:00:00Z' ],
+						total: 2
+					}, {
+						key: [ '2007-01-01T00:00:00Z' ],
+						total: 1
+					}
+				]);
+			});
+	});
+
+	it('should group aggregates by multiple fields', function() {
+		let model = createModel('testings', {
+			foo: String,
+			bar: String,
+			baz: Number
+		});
+
+		return model.insertMulti([
+			{ foo: 'a', bar: 'x', baz: 1 },
+			{ foo: 'a', bar: 'y', baz: 2 },
+			{ foo: 'a', bar: 'y', baz: 3 },
+			{ foo: 'b', bar: 'x', baz: 4 },
+			{ foo: 'b', bar: 'y', baz: 5 },
+			{ foo: 'b', bar: 'y', baz: 6 },
+			{ foo: 'b', baz: 6 }
+		])
+			.then(() => {
+				return model.aggregate({}, {
+					groupBy: [ { field: 'foo' }, 'baz' ],
+					total: true
+				});
+			})
+			.then((result) => {
+				expect(result).to.deep.equal([
+					{
+						key: [ 'a', 1 ],
+						total: 1
+					}, {
+						key: [ 'a', 2 ],
+						total: 1
+					}, {
+						key: [ 'a', 3 ],
+						total: 1
+					}, {
+						key: [ 'b', 4 ],
+						total: 1
+					}, {
+						key: [ 'b', 5 ],
+						total: 1
+					}, {
+						key: [ 'b', 6 ],
+						total: 2
+					}
+				]);
+			})
+			.then(() => {
+				return model.aggregate({}, {
+					groupBy: [
+						{ field: 'foo' },
+						{ field: 'baz', interval: 2, base: 1 }
+					],
+					total: true
+				});
+			})
+			.then((result) => {
+				expect(result).to.deep.equal([
+					{
+						key: [ 'a', 1 ],
+						total: 2
+					}, {
+						key: [ 'a', 3 ],
+						total: 1
+					}, {
+						key: [ 'b', 3 ],
+						total: 1
+					}, {
+						key: [ 'b', 5 ],
+						total: 3
+					}
+				]);
+			});
+	});
 });

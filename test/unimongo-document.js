@@ -7,7 +7,6 @@ const testScaffold = require('./lib/mongo-scaffold');
 chai.use(require('chai-as-promised'));
 
 describe('UnimongoDocument', function() {
-
 	beforeEach(testScaffold.resetAndConnect);
 
 	it('should trigger post-init hooks on init', function() {
@@ -231,5 +230,4 @@ describe('UnimongoDocument', function() {
 				expect(document.data.__rev).to.be.undefined;
 			});
 	});
-
 });
