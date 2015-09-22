@@ -222,6 +222,34 @@ describe('UnimongoModel', function() {
 			});
 	});
 
+	it('should support cursor options in UnimongoModel#find', function() {
+		let model = createModel('testings', { foo: Number, bar: Boolean, baz: Boolean });
+
+		let records = [];
+		for (let r = 0; r < 100; r++) {
+			records.push({ foo: r, bar: true, baz: true });
+		}
+
+		return model.insertMulti(records)
+			.then(() => model.find({}, {
+				skip: 8,
+				limit: 32,
+				fields: [ 'foo', 'bar' ],
+				total: true,
+				sort: [ 'bar', '-foo' ]
+			}))
+			.then((documents) => {
+				expect(documents.length).to.equal(32);
+				expect(documents.total).to.equal(100);
+
+				let keys = Object.keys(documents[0].data);
+				expect(documents[0].data.foo).to.equal(91);
+				expect(keys.length).to.equal(2);
+				expect(keys[0]).to.equal('foo');
+				expect(keys[1]).to.equal('bar');
+			});
+	});
+
 	it('should return documents from UnimongoModel#findStream', function() {
 		let model = createModel('testings', { foo: Number });
 
