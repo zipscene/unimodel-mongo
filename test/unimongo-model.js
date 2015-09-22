@@ -8,8 +8,8 @@ chai.use(require('chai-as-promised'));
 
 const keySort = (a, b) => {
 	for (let key in a.key) {
-		if (a.key[key] > b.key[key] || typeof b.key[key] === 'undefined') return 1;
-		if (a.key[key] < b.key[key]) return -1;
+		if (''+a.key[key] > ''+b.key[key] || typeof b.key[key] === 'undefined') return 1;
+		if (''+a.key[key] < ''+b.key[key]) return -1;
 	}
 	return 0;
 };
@@ -278,7 +278,7 @@ describe('UnimongoModel', function() {
 			});
 	});
 
-	it('should run groupd and ungrouped aggregates with stats', function() {
+	it('should run grouped and ungrouped aggregates with stats', function() {
 		let model = createModel('testings', {
 			foo: String,
 			bar: String,
@@ -546,14 +546,14 @@ describe('UnimongoModel', function() {
 				].sort(keySort));
 			})
 			.then(() => {
-				let wrapper = () => {
+				let fn = () => {
 					return model.aggregate({}, {
 						groupBy: [ { field: 'baz', interval: 'P1Y' } ],
 						total: true
 					});
 				};
 
-				expect(wrapper).to.throw(XError);
+				expect(fn).to.throw(XError);
 			});
 	});
 
