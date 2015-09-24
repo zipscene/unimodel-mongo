@@ -17,22 +17,38 @@ const keySort = (a, b) => {
 describe('UnimongoModel', function() {
 	beforeEach(testScaffold.resetAndConnect);
 
+	it('#getName', function() {
+		let model = createModel('FooBar', { foo: String });
+		return model.collectionPromise
+			.then(() => {
+				expect(model.getName()).to.equal('FooBar');
+			});
+	});
+
+	it('#getCollectionName', function() {
+		let model = createModel('FooBar', { foo: String });
+		return model.collectionPromise
+			.then(() => {
+				expect(model.getCollectionName()).to.equal('fooBar');
+			});
+	});
+
 	it('should create the collection when it doesnt exist', function() {
-		let model = createModel('testings', { foo: String });
+		let model = createModel('Testings', { foo: String });
 		return model.collectionPromise;
 	});
 
 	it('should not fail if the collection already exists', function() {
-		let model1 = createModel('testings', { foo: String });
+		let model1 = createModel('Testings', { foo: String });
 		return model1.collectionPromise
 			.then(() => {
-				let model2 = createModel('testings', { foo: String });
+				let model2 = createModel('Testings', { foo: String });
 				return model2.collectionPromise;
 			});
 	});
 
 	it('should recognize the appropriate indices', function() {
-		let model = createModel('testings', {
+		let model = createModel('Testings', {
 			foo: { type: String, index: true },
 			bar: { type: Number, unique: true },
 			baz: {
@@ -57,7 +73,7 @@ describe('UnimongoModel', function() {
 	});
 
 	it('should retrieve keys', function() {
-		let model = createModel('testings', {
+		let model = createModel('Testings', {
 			foo: String
 		}, {
 			keys: [ 'foo' ],
@@ -68,7 +84,7 @@ describe('UnimongoModel', function() {
 		expect(keys.length).to.equal(1);
 		expect(keys[0]).to.equal('foo');
 
-		let model2 = createModel('testings', {
+		let model2 = createModel('Testings', {
 			foo: { type: String, key: true },
 			bar: {
 				baz: { type: Number, key: true }
@@ -80,7 +96,7 @@ describe('UnimongoModel', function() {
 		expect(keys2[0]).to.equal('foo');
 		expect(keys2[1]).to.equal('bar.baz');
 
-		let model3 = createModel('testings', {
+		let model3 = createModel('Testings', {
 			foo: String,
 			bar: Number,
 			baz: {
@@ -100,7 +116,7 @@ describe('UnimongoModel', function() {
 		expect(keys3[1]).to.equal('bar');
 		expect(keys3[2]).to.equal('foo');
 
-		let model4 = createModel('testings', {
+		let model4 = createModel('Testings', {
 			foo: { type: String, index: true },
 			bar: { type: Number, unique: true },
 			baz: {
@@ -119,7 +135,7 @@ describe('UnimongoModel', function() {
 		expect(keys4.length).to.equal(1);
 		expect(keys4[0]).to.equal('foo');
 
-		let model5 = createModel('testings', {
+		let model5 = createModel('Testings', {
 			foo: String,
 			bar: {
 				baz: { type: 'geojson', index: '2dsphere' }
@@ -130,7 +146,7 @@ describe('UnimongoModel', function() {
 	});
 
 	it('should create indices', function() {
-		let model = createModel('testings', {
+		let model = createModel('Testings', {
 			foo: { type: String, unique: true },
 			bar: { type: 'geopoint', index: true }
 		}, {
@@ -146,7 +162,7 @@ describe('UnimongoModel', function() {
 
 	it('should not fail if indices already exist', function() {
 		function makeModel() {
-			return createModel('testings', {
+			return createModel('Testings', {
 				foo: { type: String, unique: true },
 				bar: { type: 'geopoint', index: true }
 			}, {
@@ -163,7 +179,7 @@ describe('UnimongoModel', function() {
 	});
 
 	it('should flag existing documents with `isExisting`', function() {
-		let model = createModel('testings', { foo: Number });
+		let model = createModel('Testings', { foo: Number });
 
 		return model.insert({ foo: '123' })
 			.then((document) => {
@@ -173,7 +189,7 @@ describe('UnimongoModel', function() {
 	});
 
 	it('should insert documents into the collection', function() {
-		let model = createModel('testings', { foo: Number });
+		let model = createModel('Testings', { foo: Number });
 
 		return model.insert({ foo: '123' })
 			.then((document) => {
@@ -183,7 +199,7 @@ describe('UnimongoModel', function() {
 	});
 
 	it('should insert multiple documents into the collection', function() {
-		let model = createModel('testings', { foo: Number });
+		let model = createModel('Testings', { foo: Number });
 
 		return model.insertMulti([ { foo: '123' }, { foo: '234' } ])
 			.then((results) => {
@@ -196,7 +212,7 @@ describe('UnimongoModel', function() {
 	});
 
 	it('should update documents with UnimongoModel#update', function() {
-		let model = createModel('testings', { foo: String });
+		let model = createModel('Testings', { foo: String });
 
 		return model.insert({ foo: 'bar' })
 			.then(() => model.update({ foo: 'bar' }, { foo: 'baz' }))
@@ -211,7 +227,7 @@ describe('UnimongoModel', function() {
 	});
 
 	it('should return documents from UnimongoModel#find', function() {
-		let model = createModel('testings', { foo: Number });
+		let model = createModel('Testings', { foo: Number });
 
 		return model.insertMulti([ { foo: 1 }, { foo: 2 } ])
 			.then(() => model.find({ foo: 2 }))
@@ -223,7 +239,7 @@ describe('UnimongoModel', function() {
 	});
 
 	it('should support cursor options in UnimongoModel#find', function() {
-		let model = createModel('testings', { foo: Number, bar: Boolean, baz: Boolean });
+		let model = createModel('Testings', { foo: Number, bar: Boolean, baz: Boolean });
 
 		let records = [];
 		for (let r = 0; r < 100; r++) {
@@ -251,7 +267,7 @@ describe('UnimongoModel', function() {
 	});
 
 	it('should return documents from UnimongoModel#findStream', function() {
-		let model = createModel('testings', { foo: Number });
+		let model = createModel('Testings', { foo: Number });
 
 		return model.insertMulti([ { foo: 1 }, { foo: 2 } ])
 			.then(() => model.findStream({ foo: 2 }).intoArray())
@@ -263,7 +279,7 @@ describe('UnimongoModel', function() {
 	});
 
 	it('should support cursor options in UnimongoModel#findStream', function() {
-		let model = createModel('testings', { foo: Number, bar: Boolean, baz: Boolean });
+		let model = createModel('Testings', { foo: Number, bar: Boolean, baz: Boolean });
 
 		let records = [];
 		for (let r = 0; r < 100; r++) {
@@ -290,7 +306,7 @@ describe('UnimongoModel', function() {
 	});
 
 	it('should handle partial documents in UnimongoModel#find', function() {
-		let model = createModel('testings', { foo: Number, bar: Number });
+		let model = createModel('Testings', { foo: Number, bar: Number });
 
 		return model.insertMulti([ { foo: 1, bar: 1 }, { foo: 2, bar: 2 } ])
 			.then(() => model.find({ foo: 2 }, { fields: [ 'bar' ] }))
@@ -301,7 +317,7 @@ describe('UnimongoModel', function() {
 	});
 
 	it('should handle partial documents in UnimongoModel#findStream', function() {
-		let model = createModel('testings', { foo: Number, bar: Number });
+		let model = createModel('Testings', { foo: Number, bar: Number });
 
 		return model.insertMulti([ { foo: 1, bar: 1 }, { foo: 2, bar: 2 } ])
 			.then(() => model.findStream({ foo: 2 }, { fields: [ 'bar' ] }).intoArray())
@@ -312,7 +328,7 @@ describe('UnimongoModel', function() {
 	});
 
 	it('should return number of matched records in UnimongoModel#count', function() {
-		let model = createModel('testings', { foo: Number });
+		let model = createModel('Testings', { foo: Number });
 
 		return model.insertMulti([ { foo: 1 }, { foo: 1 } ])
 			.then(() => model.count({ foo: 1 }))
@@ -322,7 +338,7 @@ describe('UnimongoModel', function() {
 	});
 
 	it('should remove records with UnimongoModel#remove', function() {
-		let model = createModel('testings', { foo: Number });
+		let model = createModel('Testings', { foo: Number });
 
 		return model.insertMulti([ { foo: 1 }, { foo: 2 } ])
 			.then(() => model.remove({ foo: 1 }))
@@ -334,7 +350,7 @@ describe('UnimongoModel', function() {
 	});
 
 	it('should run grouped and ungrouped aggregates with stats', function() {
-		let model = createModel('testings', {
+		let model = createModel('Testings', {
 			foo: String,
 			bar: String,
 			baz: Number,
@@ -442,7 +458,7 @@ describe('UnimongoModel', function() {
 	});
 
 	it('should run aggregates with ranges', function() {
-		let model = createModel('testings', {
+		let model = createModel('Testings', {
 			foo: Number,
 			bar: String,
 			baz: Date
@@ -546,7 +562,7 @@ describe('UnimongoModel', function() {
 	});
 
 	it('should run aggregates with intervals', function() {
-		let model = createModel('testings', {
+		let model = createModel('Testings', {
 			foo: Number,
 			bar: String,
 			baz: Date
@@ -613,7 +629,7 @@ describe('UnimongoModel', function() {
 	});
 
 	it('should run aggregates with time components', function() {
-		let model = createModel('testings', {
+		let model = createModel('Testings', {
 			foo: Number,
 			bar: String,
 			baz: Date
@@ -702,7 +718,7 @@ describe('UnimongoModel', function() {
 	});
 
 	it('should group aggregates by multiple fields', function() {
-		let model = createModel('testings', {
+		let model = createModel('Testings', {
 			foo: String,
 			bar: String,
 			baz: Number
