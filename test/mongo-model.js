@@ -1,7 +1,7 @@
 const chai = require('chai');
 const XError = require('xerror');
 const expect = chai.expect;
-const { UnimongoDocument, createModel } = require('../lib');
+const { MongoDocument, createModel } = require('../lib');
 const testScaffold = require('./lib/mongo-scaffold');
 
 chai.use(require('chai-as-promised'));
@@ -14,7 +14,7 @@ const keySort = (a, b) => {
 	return 0;
 };
 
-describe('UnimongoModel', function() {
+describe('MongoModel', function() {
 	beforeEach(testScaffold.resetAndConnect);
 
 	it('#getName', function() {
@@ -211,7 +211,7 @@ describe('UnimongoModel', function() {
 			});
 	});
 
-	it('should update documents with UnimongoModel#update', function() {
+	it('should update documents with MongoModel#update', function() {
 		let model = createModel('Testings', { foo: String });
 
 		return model.insert({ foo: 'bar' })
@@ -226,7 +226,7 @@ describe('UnimongoModel', function() {
 			});
 	});
 
-	it('should return documents from UnimongoModel#find', function() {
+	it('should return documents from MongoModel#find', function() {
 		let model = createModel('Testings', { foo: Number });
 
 		return model.insertMulti([ { foo: 1 }, { foo: 2 } ])
@@ -234,11 +234,11 @@ describe('UnimongoModel', function() {
 			.then((documents) => {
 				expect(documents.length).to.equal(1);
 				expect(documents[0].data.foo).to.equal(2);
-				expect(documents[0]).to.be.an.instanceof(UnimongoDocument);
+				expect(documents[0]).to.be.an.instanceof(MongoDocument);
 			});
 	});
 
-	it('should support cursor options in UnimongoModel#find', function() {
+	it('should support cursor options in MongoModel#find', function() {
 		let model = createModel('Testings', { foo: Number, bar: Boolean, baz: Boolean });
 
 		let records = [];
@@ -266,7 +266,7 @@ describe('UnimongoModel', function() {
 			});
 	});
 
-	it('should return documents from UnimongoModel#findStream', function() {
+	it('should return documents from MongoModel#findStream', function() {
 		let model = createModel('Testings', { foo: Number });
 
 		return model.insertMulti([ { foo: 1 }, { foo: 2 } ])
@@ -274,11 +274,11 @@ describe('UnimongoModel', function() {
 			.then((documents) => {
 				expect(documents.length).to.equal(1);
 				expect(documents[0].data.foo).to.equal(2);
-				expect(documents[0]).to.be.an.instanceof(UnimongoDocument);
+				expect(documents[0]).to.be.an.instanceof(MongoDocument);
 			});
 	});
 
-	it('should support cursor options in UnimongoModel#findStream', function() {
+	it('should support cursor options in MongoModel#findStream', function() {
 		let model = createModel('Testings', { foo: Number, bar: Boolean, baz: Boolean });
 
 		let records = [];
@@ -305,7 +305,7 @@ describe('UnimongoModel', function() {
 			});
 	});
 
-	it('should handle partial documents in UnimongoModel#find', function() {
+	it('should handle partial documents in MongoModel#find', function() {
 		let model = createModel('Testings', { foo: Number, bar: Number });
 
 		return model.insertMulti([ { foo: 1, bar: 1 }, { foo: 2, bar: 2 } ])
@@ -316,7 +316,7 @@ describe('UnimongoModel', function() {
 			});
 	});
 
-	it('should handle partial documents in UnimongoModel#findStream', function() {
+	it('should handle partial documents in MongoModel#findStream', function() {
 		let model = createModel('Testings', { foo: Number, bar: Number });
 
 		return model.insertMulti([ { foo: 1, bar: 1 }, { foo: 2, bar: 2 } ])
@@ -327,7 +327,7 @@ describe('UnimongoModel', function() {
 			});
 	});
 
-	it('should return number of matched records in UnimongoModel#count', function() {
+	it('should return number of matched records in MongoModel#count', function() {
 		let model = createModel('Testings', { foo: Number });
 
 		return model.insertMulti([ { foo: 1 }, { foo: 1 } ])
@@ -337,7 +337,7 @@ describe('UnimongoModel', function() {
 			});
 	});
 
-	it('should remove records with UnimongoModel#remove', function() {
+	it('should remove records with MongoModel#remove', function() {
 		let model = createModel('Testings', { foo: Number });
 
 		return model.insertMulti([ { foo: 1 }, { foo: 2 } ])

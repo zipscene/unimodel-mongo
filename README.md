@@ -1,4 +1,3 @@
-# zs-unimongo
+# zs-unimodel-mongo
 
-Unimodel library for accessing mongodb
-
+Unimodel library for accessing MongoDB.
