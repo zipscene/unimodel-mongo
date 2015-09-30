@@ -1,11 +1,11 @@
 const chai = require('chai');
 const expect = chai.expect;
-const { UnimongoError, createModel } = require('../lib');
+const { MongoError, createModel } = require('../lib');
 const testScaffold = require('./lib/mongo-scaffold');
 
 chai.use(require('chai-as-promised'));
 
-describe('UnimongoError', function() {
+describe('MongoError', function() {
 	beforeEach(testScaffold.resetAndConnect);
 
 	it('should parse error on duplicated id', function() {
@@ -17,17 +17,17 @@ describe('UnimongoError', function() {
 			.then(() => collection.insert({ _id: 'some id', foo: 'bar' }))
 			.then(() => collection.insert({ _id: 'some id', foo: 'baz' }))
 			.catch((err) => {
-				throw UnimongoError.fromMongoError(err, model);
+				throw MongoError.fromMongoError(err, model);
 			})
 			.catch((err) => {
-				expect(err).to.be.an.instanceOf(UnimongoError);
+				expect(err).to.be.an.instanceOf(MongoError);
 				expect(err.data.keys.length).to.equal(1);
 				expect(err.data.keys[0]).to.equal('_id');
 
 				throw err;
 			});
 
-		return expect(promise).to.be.rejectedWith(UnimongoError);
+		return expect(promise).to.be.rejectedWith(MongoError);
 	});
 
 	it('should parse error on duplicated keys', function() {
@@ -40,10 +40,10 @@ describe('UnimongoError', function() {
 			.then(() => collection.insert({ foo: 'one', bar: 'two' }))
 			.then(() => collection.insert({ foo: 'one', bar: 'two' }))
 			.catch((err) => {
-				throw UnimongoError.fromMongoError(err, model);
+				throw MongoError.fromMongoError(err, model);
 			})
 			.catch((err) => {
-				expect(err).to.be.an.instanceOf(UnimongoError);
+				expect(err).to.be.an.instanceOf(MongoError);
 				expect(err.data.keys.length).to.equal(2);
 				expect(err.data.keys[0]).to.equal('foo');
 				expect(err.data.keys[1]).to.equal('bar');
@@ -51,6 +51,6 @@ describe('UnimongoError', function() {
 				throw err;
 			});
 
-		return expect(promise).to.be.rejectedWith(UnimongoError);
+		return expect(promise).to.be.rejectedWith(MongoError);
 	});
 });

@@ -1,16 +1,16 @@
 const chai = require('chai');
 const expect = chai.expect;
-const { UnimongoDocument, UnimongoError, createModel } = require('../lib');
+const { MongoDocument, MongoError, createModel } = require('../lib');
 const Model = require('zs-unimodel').Model;
 const testScaffold = require('./lib/mongo-scaffold');
 
 chai.use(require('chai-as-promised'));
 
-describe('UnimongoDocument', function() {
+describe('MongoDocument', function() {
 	beforeEach(testScaffold.resetAndConnect);
 
 	it('should trigger post-init hooks on init', function() {
-		class TestDocument extends UnimongoDocument {
+		class TestDocument extends MongoDocument {
 			constructor(model, data) { super(model, data); }
 		}
 
@@ -46,7 +46,7 @@ describe('UnimongoDocument', function() {
 
 	it('should save changes to a new document', function() {
 		let model = createModel('testings', { foo: String });
-		let document = new UnimongoDocument(model, { foo: 'bar' });
+		let document = new MongoDocument(model, { foo: 'bar' });
 
 		document.data.foo = 'baz';
 
@@ -58,7 +58,7 @@ describe('UnimongoDocument', function() {
 
 	it('should save changes to an existing document', function() {
 		let model = createModel('testings', { foo: String });
-		let document = new UnimongoDocument(model, { foo: 'bar' });
+		let document = new MongoDocument(model, { foo: 'bar' });
 
 		return document.save()
 			.then((document) => {
@@ -73,7 +73,7 @@ describe('UnimongoDocument', function() {
 
 	it('should save changes to an existing document with a changed id', function() {
 		let model = createModel('testings', { foo: String });
-		let document = new UnimongoDocument(model, { foo: 'bar' });
+		let document = new MongoDocument(model, { foo: 'bar' });
 
 		return document.save()
 			.then((document) => {
@@ -89,8 +89,8 @@ describe('UnimongoDocument', function() {
 
 	it('should error when updating document id to an existing one', function() {
 		let model = createModel('testings', { foo: String });
-		let document = new UnimongoDocument(model, { foo: 'bar' });
-		let document2 = new UnimongoDocument(model, { foo: 'baz' });
+		let document = new MongoDocument(model, { foo: 'bar' });
+		let document2 = new MongoDocument(model, { foo: 'baz' });
 
 		let existingId;
 		return document.save()
@@ -101,7 +101,7 @@ describe('UnimongoDocument', function() {
 			.then((document2) => {
 				document2.setInternalId(existingId);
 
-				return expect(document2.save()).to.be.rejectedWith(UnimongoError);
+				return expect(document2.save()).to.be.rejectedWith(MongoError);
 			});
 	});
 
@@ -119,7 +119,7 @@ describe('UnimongoDocument', function() {
 			});
 	});
 
-	it('should remove documents with UnimongoDocument#remove', function() {
+	it('should remove documents with MongoDocument#remove', function() {
 		let model = createModel('testings', { foo: String });
 
 		return model.insert({ foo: 'bar' })
@@ -130,7 +130,7 @@ describe('UnimongoDocument', function() {
 			});
 	});
 
-	it('should properly handle saving partial documents in UnimongoDocument#save', function() {
+	it('should properly handle saving partial documents in MongoDocument#save', function() {
 		let model = createModel('testings', { foo: Number, bar: Number });
 		let model2 = createModel('testings', { foo: Number, bar: Number }, { allowSavingPartials: false });
 
@@ -151,9 +151,9 @@ describe('UnimongoDocument', function() {
 			});
 	});
 
-	it('should handle setting and removing items from the same array in UnimongoDocument#save', function() {
+	it('should handle setting and removing items from the same array in MongoDocument#save', function() {
 		let model = createModel('testings', { foo: [ String ] });
-		let document = new UnimongoDocument(model, { foo: [ 'a', 'b', 'c' ] });
+		let document = new MongoDocument(model, { foo: [ 'a', 'b', 'c' ] });
 
 		return document.save()
 			.then((document) => {
@@ -171,9 +171,9 @@ describe('UnimongoDocument', function() {
 	it('should properly increment revision number when saving documents', function() {
 		let model = createModel('testings', { foo: String });
 		let model3 = createModel('testings', { foo: [ String ] });
-		let document1 = new UnimongoDocument(model, { foo: 'bar' });
-		let document2 = new UnimongoDocument(model, { foo: 'bar' });
-		let document3 = new UnimongoDocument(model3, { foo: [ 'a', 'b', 'c' ] });
+		let document1 = new MongoDocument(model, { foo: 'bar' });
+		let document2 = new MongoDocument(model, { foo: 'bar' });
+		let document3 = new MongoDocument(model3, { foo: [ 'a', 'b', 'c' ] });
 
 		document1.data.foo = 'baz';
 
@@ -222,7 +222,7 @@ describe('UnimongoDocument', function() {
 
 	it('should clean up instance when saving documents', function() {
 		let model = createModel('testings', { foo: String });
-		let document = new UnimongoDocument(model, { foo: 'bar' });
+		let document = new MongoDocument(model, { foo: 'bar' });
 
 		return document.save()
 			.then((document) => {

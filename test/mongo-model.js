@@ -1,7 +1,7 @@
 const chai = require('chai');
 const XError = require('xerror');
 const expect = chai.expect;
-const { UnimongoDocument, createModel } = require('../lib');
+const { MongoDocument, createModel } = require('../lib');
 const testScaffold = require('./lib/mongo-scaffold');
 
 chai.use(require('chai-as-promised'));
@@ -14,7 +14,7 @@ const keySort = (a, b) => {
 	return 0;
 };
 
-describe('UnimongoModel', function() {
+describe('MongoModel', function() {
 	beforeEach(testScaffold.resetAndConnect);
 
 	it('#getName', function() {
@@ -234,7 +234,7 @@ describe('UnimongoModel', function() {
 			.then((documents) => {
 				expect(documents.length).to.equal(1);
 				expect(documents[0].data.foo).to.equal(2);
-				expect(documents[0]).to.be.an.instanceof(UnimongoDocument);
+				expect(documents[0]).to.be.an.instanceof(MongoDocument);
 			});
 	});
 
@@ -274,7 +274,7 @@ describe('UnimongoModel', function() {
 			.then((documents) => {
 				expect(documents.length).to.equal(1);
 				expect(documents[0].data.foo).to.equal(2);
-				expect(documents[0]).to.be.an.instanceof(UnimongoDocument);
+				expect(documents[0]).to.be.an.instanceof(MongoDocument);
 			});
 	});
 

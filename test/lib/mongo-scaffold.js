@@ -1,10 +1,10 @@
 /**
- * Common test code for Unimongo.
+ * Common test code for Mongo.
  */
-const unimongo = require('../../lib');
+const mongo = require('../../lib');
 
 const config = {
-	uri: 'mongodb://localhost/unimongotest',
+	uri: 'mongodb://localhost/mongotest',
 	nonexistantUri: 'mongodb://localhost:44332/nonexistant'
 };
 
@@ -20,9 +20,9 @@ function reset() {
 		// Connect freshly to drop the database
 		.then(connect)
 		// Drop the database
-		.then(() => unimongo.db.dropDatabase())
+		.then(() => mongo.db.dropDatabase())
 		// Close the connection
-		.then(() => unimongo.db.close());
+		.then(() => mongo.db.close());
 }
 
 /**
@@ -32,7 +32,7 @@ function reset() {
  * @return {Promise} - Resolves when successfully connected.
  */
 function connect() {
-	return unimongo.connect(config.uri);
+	return mongo.connect(config.uri);
 }
 
 /**

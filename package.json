@@ -1,11 +1,11 @@
 {
-  "name": "zs-unimongo",
-  "version": "0.2.0",
+  "name": "zs-unimodel-mongo",
+  "version": "0.3.0",
   "description": "Unimodel library for accessing mongodb",
   "main": "./dist/lib/index.js",
   "repository": {
     "type": "git",
-    "url": "git@git.zipscene.com:zsapilibs/zs-unimongo.git"
+    "url": "git@git.zipscene.com:zsapilibs/zs-unimodel-mongo.git"
   },
   "scripts": {
     "lint": "node ./node_modules/.bin/eslint . || exit 0",
