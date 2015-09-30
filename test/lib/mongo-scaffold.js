@@ -16,7 +16,7 @@ const config = {
 function reset() {
 	return Promise.resolve()
 		// Close any open database connections
-		.then(() => unimongo.db.close())
+		.then(() => mongo.db.close())
 		// Connect freshly to drop the database
 		.then(connect)
 		// Drop the database

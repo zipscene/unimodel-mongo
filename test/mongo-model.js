@@ -211,7 +211,7 @@ describe('MongoModel', function() {
 			});
 	});
 
-	it('should update documents with UnimongoModel#update', function() {
+	it('should update documents with MongoModel#update', function() {
 		let model = createModel('Testings', { foo: String });
 
 		return model.insert({ foo: 'bar' })
@@ -226,7 +226,7 @@ describe('MongoModel', function() {
 			});
 	});
 
-	it('should return documents from UnimongoModel#find', function() {
+	it('should return documents from MongoModel#find', function() {
 		let model = createModel('Testings', { foo: Number });
 
 		return model.insertMulti([ { foo: 1 }, { foo: 2 } ])
@@ -238,7 +238,7 @@ describe('MongoModel', function() {
 			});
 	});
 
-	it('should support cursor options in UnimongoModel#find', function() {
+	it('should support cursor options in MongoModel#find', function() {
 		let model = createModel('Testings', { foo: Number, bar: Boolean, baz: Boolean });
 
 		let records = [];
@@ -266,7 +266,7 @@ describe('MongoModel', function() {
 			});
 	});
 
-	it('should return documents from UnimongoModel#findStream', function() {
+	it('should return documents from MongoModel#findStream', function() {
 		let model = createModel('Testings', { foo: Number });
 
 		return model.insertMulti([ { foo: 1 }, { foo: 2 } ])
@@ -278,7 +278,7 @@ describe('MongoModel', function() {
 			});
 	});
 
-	it('should support cursor options in UnimongoModel#findStream', function() {
+	it('should support cursor options in MongoModel#findStream', function() {
 		let model = createModel('Testings', { foo: Number, bar: Boolean, baz: Boolean });
 
 		let records = [];
@@ -305,7 +305,7 @@ describe('MongoModel', function() {
 			});
 	});
 
-	it('should handle partial documents in UnimongoModel#find', function() {
+	it('should handle partial documents in MongoModel#find', function() {
 		let model = createModel('Testings', { foo: Number, bar: Number });
 
 		return model.insertMulti([ { foo: 1, bar: 1 }, { foo: 2, bar: 2 } ])
@@ -316,7 +316,7 @@ describe('MongoModel', function() {
 			});
 	});
 
-	it('should handle partial documents in UnimongoModel#findStream', function() {
+	it('should handle partial documents in MongoModel#findStream', function() {
 		let model = createModel('Testings', { foo: Number, bar: Number });
 
 		return model.insertMulti([ { foo: 1, bar: 1 }, { foo: 2, bar: 2 } ])
@@ -327,7 +327,7 @@ describe('MongoModel', function() {
 			});
 	});
 
-	it('should return number of matched records in UnimongoModel#count', function() {
+	it('should return number of matched records in MongoModel#count', function() {
 		let model = createModel('Testings', { foo: Number });
 
 		return model.insertMulti([ { foo: 1 }, { foo: 1 } ])
@@ -337,7 +337,7 @@ describe('MongoModel', function() {
 			});
 	});
 
-	it('should remove records with UnimongoModel#remove', function() {
+	it('should remove records with MongoModel#remove', function() {
 		let model = createModel('Testings', { foo: Number });
 
 		return model.insertMulti([ { foo: 1 }, { foo: 2 } ])
