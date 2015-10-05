@@ -1,16 +1,23 @@
 const expect = require('chai').expect;
 const mongo = require('../lib/index');
+const testScaffold = require('./lib/mongo-scaffold');
 
 describe('zs-unimodel-mongo', () => {
+	beforeEach(testScaffold.resetAndConnect);
+
 	it('should register and be able to get model', () => {
-		let Collection = mongo.createModel('Collection', {
+		let model = mongo.createModel('Foo', {
 			id: { type: String, index: true, id: true },
 			name: { type: String, index: true }
 		});
-		mongo.model(Collection);
-		let GotModel = mongo.model('Collection');
-		expect(GotModel).to.be.instanceOf(mongo.MongoModel);
-		expect(GotModel.getName()).to.equal('Collection');
+
+		return model.collectionPromise
+			.then(() => {
+				mongo.model(model);
+				let GotModel = mongo.model('Foo');
+				expect(GotModel).to.be.instanceOf(mongo.MongoModel);
+				expect(GotModel.getName()).to.equal('Foo');
+			});
 	});
 
 	it('should throw error when passed in non model instance nor string', () => {
