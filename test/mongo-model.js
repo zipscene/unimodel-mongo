@@ -3,6 +3,7 @@ const XError = require('xerror');
 const expect = chai.expect;
 const { MongoDocument, createModel } = require('../lib');
 const testScaffold = require('./lib/mongo-scaffold');
+const { map } = require('zs-common-schema');
 
 chai.use(require('chai-as-promised'));
 
@@ -789,4 +790,33 @@ describe('MongoModel', function() {
 				]);
 			});
 	});
+
+	describe.only('map support', function() {
+
+		it.only('should convert indices on maps into arrays', function() {
+			let model = createModel('MapFoo', {
+				foo: map({}, {
+					count: {
+						type: Number,
+						index: true
+					},
+					total: {
+						type: Number,
+						index: true
+					}
+				})
+			});
+			model.index({ 'foo.total': 1, 'foo.count': 1 });
+			return model.collectionPromise
+				.then(() => {
+					expect(model._indices).to.deep.include.members([
+						{ spec: { '_mapidx_foo|count': 1 }, options: {} },
+						{ spec: { '_mapidx_foo|total': 1 }, options: {} },
+						{ spec: { '_mapidx_foo|count_foo|total': 1 }, options: {} }
+					]);
+				});
+		});
+
+	});
+
 });
