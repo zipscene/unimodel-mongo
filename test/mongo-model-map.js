@@ -90,25 +90,31 @@ describe('MongoModel (Map Support)', function() {
 					} }
 				]
 			});
-			let ltbson = BSON.serialize([ 'zs', '2014' ]);
-			ltbson[ltbson.length - 1] += 1;
-			expect(query.getData()['_mapidx_aggrs|orderTotal_total'])
-				.to.equal(BSON.serialize([ 'zs', '2014', 4 ]).toString());
-			expect(query.getData().$and).to.deep.include.members([
-				{ '_mapidx_aggrs|orderTotal_total': {
-					$gt: BSON.serialize([ 'zs', '2014', 2 ]).toString(),
-					$lt: ltbson.toString()
-				} },
-				{ '_mapidx_aggrs|orderTotal_total': {
-					$lte: BSON.serialize([ 'zs', '2014', 2 ]).toString(),
-					$gte: BSON.serialize([ 'zs', '2014' ]).toString()
-				} },
-				{ '_mapidx_aggrs|orderTotal_total': {
-					$gt: BSON.serialize([ 'zs', '2014', 2 ]).toString(),
-					$lte: BSON.serialize([ 'zs', '2014', 10 ]).toString()
-				} }
-			]);
-			return Model.collectionPromise;
+			return Model.collectionPromise.then(() => {
+				let gtbsonA = BSON.serialize([ 'zs', '2014', 2 ]);
+				let ltbsonA = BSON.serialize([ 'zs', '2014' ]);
+				ltbsonA[ltbsonA.length - 2] += 1;
+				ltbsonA[0] = gtbsonA[0];
+				let ltbsonB = BSON.serialize([ 'zs', '2014', 2 ]);
+				let gtbsonB = BSON.serialize([ 'zs', '2014' ]);
+				gtbsonB[0] = ltbsonB[0];
+				expect(query.getData()['_mapidx_aggrs|orderTotal_total'])
+					.to.equal(BSON.serialize([ 'zs', '2014', 4 ]).toString());
+				expect(query.getData().$and).to.deep.include.members([
+					{ '_mapidx_aggrs|orderTotal_total': {
+						$gt: gtbsonA.toString(),
+						$lt: ltbsonA.toString()
+					} },
+					{ '_mapidx_aggrs|orderTotal_total': {
+						$lte: ltbsonB.toString(),
+						$gte: gtbsonB.toString()
+					} },
+					{ '_mapidx_aggrs|orderTotal_total': {
+						$gt: BSON.serialize([ 'zs', '2014', 2 ]).toString(),
+						$lte: BSON.serialize([ 'zs', '2014', 10 ]).toString()
+					} }
+				]);
+			});
 		});
 
 		it('should normalize compound indexed map queries', function() {
@@ -125,13 +131,14 @@ describe('MongoModel (Map Support)', function() {
 				'aggrs.zs.orderTotal.2014.total': 4,
 				'aggrs.zs.orderTotal.2014.count': 2
 			});
-			expect(query.getData()).to.deep.equal({
-				'_mapidx_aggrs|orderTotal_count_total': BSON.serialize([ 'zs', '2014', 2, 4 ]).toString()
+			return Model.collectionPromise.then(() => {
+				expect(query.getData()).to.deep.equal({
+					'_mapidx_aggrs|orderTotal_count_total': BSON.serialize([ 'zs', '2014', 2, 4 ]).toString()
+				});
 			});
-			return Model.collectionPromise;
 		});
 
-		it.only('should find using indexed maps', function() {
+		it('should find using indexed maps', function() {
 			let Model = createModel('Testings', {
 				orderTotal: map({}, {
 					count: { type: Number, index: true }
