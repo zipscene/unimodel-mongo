@@ -217,13 +217,28 @@ describe('MongoModel', function() {
 
 		return model.insert({ foo: 'bar' })
 			.then(() => model.update({ foo: 'bar' }, { foo: 'baz' }))
-			.then((result) => {
-				expect(result.result.nModified).to.equal(1);
+			.then((numUpdated) => {
+				expect(numUpdated).to.equal(1);
 			})
 			.then(() => model.find({ foo: 'baz' }))
 			.then((documents) => {
 				expect(documents.length).to.equal(1);
 				expect(documents[0].data.foo).to.equal('baz');
+			});
+	});
+
+	it('should update map docuemnts using a stream with MongoModel#update', function() {
+		let model = createModel('Testings', { foo: map({}, String) });
+
+		return model.insert({ foo: { lol: 'bar' } })
+			.then(() => model.update({ foo: { lol: 'bar' } }, { foo: { lol: 'baz' } }))
+			.then((numUpdated) => {
+				expect(numUpdated).to.equal(1);
+			})
+			.then(() => model.find({ foo: { lol: 'baz' } }))
+			.then((documents) => {
+				expect(documents.length).to.equal(1);
+				expect(documents[0].data.foo.lol).to.equal('baz');
 			});
 	});
 
