@@ -284,7 +284,7 @@ describe('MongoDocument', function() {
 				});
 				return doc.save()
 					.then(() => {
-						let mapFields = doc._getIndexedMapFields(doc.getData());
+						let mapFields = doc._getIndexedMapValues(doc.getData());
 						expect(mapFields['_mapidx_aggrs|orderTotal_count']).to.deep.include.members([
 							BSON.serialize([ 'zs', '2014-09', 5 ]).toString(),
 							BSON.serialize([ 'zs', '2014-10', 10 ]).toString(),
