@@ -733,6 +733,44 @@ describe('MongoModel', function() {
 			});
 	});
 
+	it('should support aggregates accross map fields', function() {
+		let model = createModel('Testings', {
+			orderTotal: map({}, {
+				count: String
+			})
+		});
+
+		return model.insertMulti([
+			{ orderTotal: {
+				'2014': { count: 2 }
+			} },
+			{ orderTotal: {
+				'2014': { count: 2 }
+			} },
+			{ orderTotal: {
+				'2014': { count: 6 }
+			} }
+		])
+			.then(() => {
+				return model.aggregate({}, {
+					groupBy: 'orderTotal.2014.count',
+					total: true
+				});
+			})
+			.then((result) => {
+				expect(result).to.deep.include.members([
+					{
+						key: [ '2' ],
+						total: 2
+					},
+					{
+						key: [ '6' ],
+						total: 1
+					}
+				]);
+			});
+	});
+
 	it('should group aggregates by multiple fields', function() {
 		let model = createModel('Testings', {
 			foo: String,
