@@ -4,6 +4,7 @@ const { MongoDocument, MongoError, createModel } = require('../lib');
 const Model = require('zs-unimodel').Model;
 const testScaffold = require('./lib/mongo-scaffold');
 const bson = require('bson');
+const BSON = new bson.BSONPure.BSON();
 const { map } = require('zs-common-schema');
 
 chai.use(require('chai-as-promised'));
@@ -233,79 +234,4 @@ describe('MongoDocument', function() {
 			});
 	});
 
-	it('should support indexed maps', function() {
-		let BSON = new bson.BSONPure.BSON();
-		let model = createModel('Aggrs', {
-			aggrs: map({}, {
-				total: {
-					type: Number,
-					index: true
-				},
-				orderTotal: map({}, {
-					count: {
-						type: Number,
-						index: true
-					},
-					total: {
-						type: Number,
-						index: true
-					}
-				})
-			})
-		});
-		model.index({ 'aggrs.orderTotal.total': 1, 'aggrs.orderTotal.count': 1 });
-		return model.collectionPromise
-			.then(() => {
-				let doc = model.create({
-					aggrs: {
-						zs: {
-							total: 3,
-							orderTotal: {
-								'2014-09': {
-									count: 5,
-									total: 2
-								},
-								'2014-10': {
-									count: 10,
-									total: 1
-								}
-							}
-						},
-						marcos: {
-							total: 123,
-							orderTotal: {
-								'2015-01': {
-									count: 3,
-									total: 123
-								}
-							}
-						}
-					}
-				});
-				return doc.save()
-					.then(() => {
-						let mapFields = doc._getIndexedMapValues(doc.getData());
-						expect(mapFields['_mapidx_aggrs|orderTotal_count']).to.deep.include.members([
-							BSON.serialize([ 'zs', '2014-09', 5 ]).toString(),
-							BSON.serialize([ 'zs', '2014-10', 10 ]).toString(),
-							BSON.serialize([ 'marcos', '2015-01', 3 ]).toString()
-						]);
-						expect(mapFields['_mapidx_aggrs|orderTotal_total']).to.deep.include.members([
-							BSON.serialize([ 'zs', '2014-09', 2 ]).toString(),
-							BSON.serialize([ 'zs', '2014-10', 1 ]).toString(),
-							BSON.serialize([ 'marcos', '2015-01', 123 ]).toString()
-						]);
-						expect(mapFields['_mapidx_aggrs_total']) //eslint-disable-line dot-notation
-							.to.deep.include.members([
-								BSON.serialize([ 'zs', 3 ]).toString(),
-								BSON.serialize([ 'marcos', 123 ]).toString()
-							]);
-						expect(mapFields['_mapidx_aggrs|orderTotal_count_total']).to.deep.include.members([
-							BSON.serialize([ 'zs', '2014-09', 5, 2 ]).toString(),
-							BSON.serialize([ 'zs', '2014-10', 10, 1 ]).toString(),
-							BSON.serialize([ 'marcos', '2015-01', 3, 123 ]).toString()
-						]);
-					});
-			});
-	});
 });
