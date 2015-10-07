@@ -3,6 +3,7 @@ const XError = require('xerror');
 const expect = chai.expect;
 const { MongoDocument, createModel } = require('../lib');
 const testScaffold = require('./lib/mongo-scaffold');
+const { map } = require('zs-common-schema');
 
 chai.use(require('chai-as-promised'));
 
@@ -216,13 +217,28 @@ describe('MongoModel', function() {
 
 		return model.insert({ foo: 'bar' })
 			.then(() => model.update({ foo: 'bar' }, { foo: 'baz' }))
-			.then((result) => {
-				expect(result.result.nModified).to.equal(1);
+			.then((numUpdated) => {
+				expect(numUpdated).to.equal(1);
 			})
 			.then(() => model.find({ foo: 'baz' }))
 			.then((documents) => {
 				expect(documents.length).to.equal(1);
 				expect(documents[0].data.foo).to.equal('baz');
+			});
+	});
+
+	it('should update map docuemnts using a stream with MongoModel#update', function() {
+		let model = createModel('Testings', { foo: map({}, String) });
+
+		return model.insert({ foo: { lol: 'bar' } })
+			.then(() => model.update({ foo: { lol: 'bar' } }, { foo: { lol: 'baz' } }))
+			.then((numUpdated) => {
+				expect(numUpdated).to.equal(1);
+			})
+			.then(() => model.find({ foo: { lol: 'baz' } }))
+			.then((documents) => {
+				expect(documents.length).to.equal(1);
+				expect(documents[0].data.foo.lol).to.equal('baz');
 			});
 	});
 
@@ -717,6 +733,44 @@ describe('MongoModel', function() {
 			});
 	});
 
+	it('should support aggregates accross map fields', function() {
+		let model = createModel('Testings', {
+			orderTotal: map({}, {
+				count: String
+			})
+		});
+
+		return model.insertMulti([
+			{ orderTotal: {
+				'2014': { count: 2 }
+			} },
+			{ orderTotal: {
+				'2014': { count: 2 }
+			} },
+			{ orderTotal: {
+				'2014': { count: 6 }
+			} }
+		])
+			.then(() => {
+				return model.aggregate({}, {
+					groupBy: 'orderTotal.2014.count',
+					total: true
+				});
+			})
+			.then((result) => {
+				expect(result).to.deep.include.members([
+					{
+						key: [ '2' ],
+						total: 2
+					},
+					{
+						key: [ '6' ],
+						total: 1
+					}
+				]);
+			});
+	});
+
 	it('should group aggregates by multiple fields', function() {
 		let model = createModel('Testings', {
 			foo: String,
@@ -789,4 +843,5 @@ describe('MongoModel', function() {
 				]);
 			});
 	});
+
 });

@@ -3,6 +3,9 @@ const expect = chai.expect;
 const { MongoDocument, MongoError, createModel } = require('../lib');
 const Model = require('zs-unimodel').Model;
 const testScaffold = require('./lib/mongo-scaffold');
+const bson = require('bson');
+const BSON = new bson.BSONPure.BSON();
+const { map } = require('zs-common-schema');
 
 chai.use(require('chai-as-promised'));
 
@@ -230,4 +233,5 @@ describe('MongoDocument', function() {
 				expect(document.data.__rev).to.be.undefined;
 			});
 	});
+
 });
