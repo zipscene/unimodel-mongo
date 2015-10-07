@@ -182,6 +182,103 @@ describe('MongoModel (Map Support)', function() {
 				});
 		});
 
+		it('should normalize inside logical join operators', function() {
+			let Model = createModel('Testings', {
+				orderTotal: map({}, {
+					count: { type: Number, index: true }
+				})
+			});
+			return Model.collectionPromise.then(() => {
+				let query = Model.normalizeQuery({
+					$and: [
+						{ $or: [
+							{ $nor: [
+								{ 'orderTotal.2014.count': 5 }
+							] }
+						] }
+					]
+				});
+				expect(query.getData()).to.deep.equal({
+					$and: [
+						{ $or: [
+							{ $nor: [
+								{ '_mapidx_orderTotal_count': BSON.serialize([ '2014', 5 ]).toString() }
+							] }
+						] }
+					]
+				});
+			});
+		});
+
+		it('should not map normalize if no map fields are present', function() {
+			let Model = createModel('Testings', {
+				orderTotal: { 2014: {
+					count: { type: Number, index: true }
+				} }
+			});
+			return Model.collectionPromise.then(() => {
+				let rawQuery = {
+					'orderTotal.2014.count': 5
+				};
+				let query = Model.normalizeQuery(rawQuery);
+				expect(query.getData()).to.deep.equal(rawQuery);
+			});
+		});
+
+		it('should not map normalize if multiple maps are present', function() {
+			let Model = createModel('Testings', {
+				aggrs: map({}, {
+					count: { type: Number, index: true },
+					orderTotal: map({}, {
+						count: { type: Number, index: true }
+					})
+				})
+			});
+			return Model.collectionPromise.then(() => {
+				let rawQuery = {
+					'aggrs.zs.orderTotal.2014.count': 2,
+					'aggrs.zs.count': 5
+				};
+				let query = Model.normalizeQuery(rawQuery);
+				expect(query.getData()).to.deep.equal(rawQuery);
+			});
+
+		});
+
+		it('should not map normalize if invalid operators are found', function() {
+			let Model = createModel('Testings', {
+				orderTotal: map({}, {
+					count: { type: Number, index: true }
+				})
+			});
+			return Model.collectionPromise.then(() => {
+				let rawQuery = {
+					'orderTotal.2014.count': {
+						$not: {
+							$gt: 5
+						}
+					}
+				};
+				let query = Model.normalizeQuery(rawQuery);
+				expect(query.getData()).to.deep.equal(rawQuery);
+			});
+		});
+
+		it('should not map normalize if the field is not indexed', function() {
+			let Model = createModel('Testings', {
+				orderTotal: map({}, {
+					count: Number
+				})
+			});
+			return Model.collectionPromise.then(() => {
+				let rawQuery = {
+					'orderTotal.2014.count': 5
+				};
+				let query = Model.normalizeQuery(rawQuery);
+				expect(query.getData()).to.deep.equal(rawQuery);
+			});
+		});
+
 	});
 
 	describe('schema', function() {
