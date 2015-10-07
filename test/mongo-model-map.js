@@ -151,7 +151,7 @@ describe('MongoModel (Map Support)', function() {
 				{ orderTotal: { 2015: { count: 10 } } }
 			])
 				.then(() => Model.find({
-					'orderTotal.2014.count': { $gte: 2, $lt: 9999999 }
+					'orderTotal.2014.count': { $gte: 2 }
 				}))
 				.then((docs) => {
 					expect(docs).to.be.instanceof(Array);
