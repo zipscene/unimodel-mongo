@@ -1,7 +1,7 @@
 const chai = require('chai');
 const XError = require('xerror');
 const expect = chai.expect;
-const { MongoDocument, createModel, MongoError } = require('../lib');
+const { MongoDocument, createModel } = require('../lib');
 const testScaffold = require('./lib/mongo-scaffold');
 const { map } = require('zs-common-schema');
 
@@ -842,56 +842,6 @@ describe('MongoModel', function() {
 					}
 				]);
 			});
-	});
-
-	it('should support indexed maps', function() {
-		let model = createModel('Aggrs', {
-			aggrs: map({}, {
-				total: {
-					type: Number,
-					index: true
-				},
-				orderTotal: map({}, {
-					count: {
-						type: Number,
-						index: true
-					},
-					total: {
-						type: Number,
-						index: true
-					}
-				})
-			})
-		});
-		model.index({ 'aggrs.orderTotal.total': 1, 'aggrs.orderTotal.count': 1 });
-		return model.collectionPromise
-			.then(() => {
-				expect(model._indices).to.deep.include.members([
-					{ spec: { '_mapidx_aggrs_total': 1 }, options: {} },
-					{ spec: { '_mapidx_aggrs|orderTotal_count': 1 }, options: {} },
-					{ spec: { '_mapidx_aggrs|orderTotal_total': 1 }, options: {} },
-					{ spec: { '_mapidx_aggrs|orderTotal_count_total': 1 }, options: {} }
-				]);
-			});
-	});
-
-	it('should throw when trying to index across multiple maps', function() {
-		let Model = createModel('Aggrs', {
-			aggrs: map({}, {
-				total: {
-					type: Number,
-					index: true
-				},
-				orderTotal: map({}, {
-					total: {
-						type: Number,
-						index: true
-					}
-				})
-			})
-		});
-		expect(() => Model.index({ 'aggrs.total': 1, 'aggrs.orderTotal.total': 1 }))
-			.to.throw(MongoError, 'Cannot index accross maps multiple maps.');
 	});
 
 });
