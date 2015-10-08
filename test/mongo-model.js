@@ -246,9 +246,12 @@ describe('MongoModel', function() {
 		let model = createModel('Testings', { foo: String });
 
 		return model.upsert({ foo: 'bar' }, { foo: 'baz' })
+			.then((numUpdated) => {
+				expect(numUpdated).to.equal(0);
+			})
 			.then(() => model.find({ foo: 'baz' }))
 			.then((documents) => {
-				expect(documents.length).to.equal(1);
+				expect(documents).to.have.length(1);
 				expect(documents[0].data.foo).to.equal('baz');
 			});
 	});
@@ -258,6 +261,9 @@ describe('MongoModel', function() {
 
 		return model.insert({ foo: 'bar' })
 			.then(() => model.upsert({ foo: 'bar' }, { foo: 'baz' }))
+			.then((numUpdated) => {
+				expect(numUpdated).to.equal(1);
+			})
 			.then(() => model.find({ foo: 'baz' }))
 			.then((documents) => {
 				expect(documents.length).to.equal(1);
