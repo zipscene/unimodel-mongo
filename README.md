@@ -71,7 +71,7 @@ Mongo does directly support indexing map types. To alleviate this, UnimodelMongo
 fields holding map index information, which is stored in a serialized BSON format.
 
 #### Schema/Index Conversion
-Schema/Index conversion works for both non-compound and compound indices, as long as the compound index is accessing the same map.
+Schema/Index conversion works for both non-compound and compound indices, as long as the compound index is accessing the same map.  
 For example the following:
 ```js
 let Animal = mongo.createModel('Animal', {
