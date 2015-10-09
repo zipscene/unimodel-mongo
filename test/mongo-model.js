@@ -212,7 +212,7 @@ describe('MongoModel', function() {
 			});
 	});
 
-	it('should update documents with MongoModel#update', function() {
+	it('MongoModel#update should update documents', function() {
 		let model = createModel('Testings', { foo: String });
 
 		return model.insert({ foo: 'bar' })
@@ -227,7 +227,7 @@ describe('MongoModel', function() {
 			});
 	});
 
-	it('should update map docuemnts using a stream with MongoModel#update', function() {
+	it('MongoModel#update should update map docuemnts using a stream', function() {
 		let model = createModel('Testings', { foo: map({}, String) });
 
 		return model.insert({ foo: { lol: 'bar' } })
@@ -239,6 +239,35 @@ describe('MongoModel', function() {
 			.then((documents) => {
 				expect(documents.length).to.equal(1);
 				expect(documents[0].data.foo.lol).to.equal('baz');
+			});
+	});
+
+	it('MongoModel#upsert should create a document if none match the query', function() {
+		let model = createModel('Testings', { foo: String });
+
+		return model.upsert({ foo: 'bar' }, { foo: 'baz' })
+			.then((numUpdated) => {
+				expect(numUpdated).to.equal(0);
+			})
+			.then(() => model.find({ foo: 'baz' }))
+			.then((documents) => {
+				expect(documents).to.have.length(1);
+				expect(documents[0].data.foo).to.equal('baz');
+			});
+	});
+
+	it('MongoModel#upsert should update documents if some are found', function() {
+		let model = createModel('Testings', { foo: String });
+
+		return model.insert({ foo: 'bar' })
+			.then(() => model.upsert({ foo: 'bar' }, { foo: 'baz' }))
+			.then((numUpdated) => {
+				expect(numUpdated).to.equal(1);
+			})
+			.then(() => model.find({ foo: 'baz' }))
+			.then((documents) => {
+				expect(documents.length).to.equal(1);
+				expect(documents[0].data.foo).to.equal('baz');
 			});
 	});
 
