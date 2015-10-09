@@ -16,7 +16,6 @@ Initiate the default connection to mongo:
 ```js
 let mongo = require('zs-unimodel-mongo');
 mongo.connect('mongodb://localhost/mongotest');
-});
 ```
 
 Create an MongoModel:
