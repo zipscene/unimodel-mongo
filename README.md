@@ -31,7 +31,7 @@ let Animal = mongo.createModel(
 
 Register the MongoModel with the default model registry:
 ```js
-mongo.model('Animal', Animal);
+mongo.model(Animal);
 ```
 
 Use the model registry for CRUD operations on the model:
