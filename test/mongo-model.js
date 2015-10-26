@@ -894,11 +894,11 @@ describe('MongoModel', function() {
 			}
 		])
 			.then(() => {
-				return model.findOne({
+				return model.find({
 					'credit.creditCards.suffix': 'asdf'
 				});
 			})
-			.then((result) => {
+			.then(([ result ]) => {
 				expect(result.data.credit.creditCards[0].suffix).to.equal('asdf');
 			});
 	});
