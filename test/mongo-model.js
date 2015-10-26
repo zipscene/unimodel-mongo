@@ -873,4 +873,34 @@ describe('MongoModel', function() {
 			});
 	});
 
+	it('should allow indexed arrays inside objects', function() {
+		let model = createModel('Testings', {
+			credit: {
+				creditCards: [ {
+					suffix: {
+						type: String,
+						index: true
+					}
+				} ]
+			}
+		});
+		return model.insertMulti([
+			{
+				credit: {
+					creditCards: [
+						{ suffix: 'asdf' }
+					]
+				}
+			}
+		])
+			.then(() => {
+				return model.find({
+					'credit.creditCards.suffix': 'asdf'
+				});
+			})
+			.then(([ result ]) => {
+				expect(result.data.credit.creditCards[0].suffix).to.equal('asdf');
+			});
+	});
+
 });
