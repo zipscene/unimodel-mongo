@@ -1,6 +1,6 @@
 {
   "name": "zs-unimodel-mongo",
-  "version": "0.7.7",
+  "version": "0.7.8",
   "description": "Unimodel library for accessing mongodb",
   "main": "./dist/lib/index.js",
   "repository": {
@@ -27,7 +27,7 @@
     "zs-common-query": "^1.6.1",
     "zs-common-schema": "^1.7.1",
     "zs-objtools": "^1.2.0",
-    "zs-unimodel": "^0.5.8",
+    "zs-unimodel": "^0.5.9",
     "zstreams": "^3.2.1"
   },
   "devDependencies": {
