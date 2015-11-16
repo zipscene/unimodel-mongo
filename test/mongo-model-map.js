@@ -1,11 +1,12 @@
-const chai = require('chai');
-const expect = chai.expect;
-const { createModel, MongoError } = require('../lib');
+const { expect } = require('chai');
+const { createModel, MongoModel, MongoError } = require('../lib');
 const testScaffold = require('./lib/mongo-scaffold');
 const { map } = require('zs-common-schema');
 const bson = require('bson');
 const BSON = new bson.BSONPure.BSON();
 const objtools = require('zs-objtools');
+
+const hash = MongoModel.createMapFieldHash;
 
 describe('MongoModel (Map Support)', function() {
 	beforeEach(testScaffold.resetAndConnect);
@@ -35,10 +36,10 @@ describe('MongoModel (Map Support)', function() {
 			return model.collectionPromise
 				.then(() => {
 					expect(model._indices).to.deep.include.members([
-						{ spec: { '_mapidx_aggrs^total': 1 }, options: {} },
-						{ spec: { '_mapidx_aggrs|orderTotal^count': 1 }, options: {} },
-						{ spec: { '_mapidx_aggrs|orderTotal^total': 1 }, options: {} },
-						{ spec: { '_mapidx_aggrs|orderTotal^count^total': 1 }, options: {} }
+						{ spec: { [hash('aggrs^total')]: 1 }, options: {} },
+						{ spec: { [hash('aggrs|orderTotal^count')]: 1 }, options: {} },
+						{ spec: { [hash('aggrs|orderTotal^total')]: 1 }, options: {} },
+						{ spec: { [hash('aggrs|orderTotal^count^total')]: 1 }, options: {} }
 					]);
 				});
 		});
@@ -98,18 +99,18 @@ describe('MongoModel (Map Support)', function() {
 				let ltbsonB = BSON.serialize([ 'zs', '2014', 2 ]);
 				let gtbsonB = BSON.serialize([ 'zs', '2014' ]);
 				gtbsonB[0] = ltbsonB[0];
-				expect(query.getData()['_mapidx_aggrs|orderTotal^total'])
+				expect(query.getData()[hash('aggrs|orderTotal^total')])
 					.to.equal(BSON.serialize([ 'zs', '2014', 4 ]).toString());
 				expect(query.getData().$and).to.deep.include.members([
-					{ '_mapidx_aggrs|orderTotal^total': {
+					{ [hash('aggrs|orderTotal^total')]: {
 						$gt: gtbsonA.toString(),
 						$lt: ltbsonA.toString()
 					} },
-					{ '_mapidx_aggrs|orderTotal^total': {
+					{ [hash('aggrs|orderTotal^total')]: {
 						$lte: ltbsonB.toString(),
 						$gte: gtbsonB.toString()
 					} },
-					{ '_mapidx_aggrs|orderTotal^total': {
+					{ [hash('aggrs|orderTotal^total')]: {
 						$gt: BSON.serialize([ 'zs', '2014', 2 ]).toString(),
 						$lte: BSON.serialize([ 'zs', '2014', 10 ]).toString()
 					} }
@@ -133,7 +134,7 @@ describe('MongoModel (Map Support)', function() {
 			});
 			return Model.collectionPromise.then(() => {
 				expect(query.getData()).to.deep.equal({
-					'_mapidx_aggrs|orderTotal^count^total': BSON.serialize([ 'zs', '2014', 2, 4 ]).toString()
+					[hash('aggrs|orderTotal^count^total')]: BSON.serialize([ 'zs', '2014', 2, 4 ]).toString()
 				});
 			});
 		});
@@ -198,11 +199,12 @@ describe('MongoModel (Map Support)', function() {
 						] }
 					]
 				});
+
 				expect(query.getData()).to.deep.equal({
 					$and: [
 						{ $or: [
 							{ $nor: [
-								{ '_mapidx_orderTotal^count': BSON.serialize([ '2014', 5 ]).toString() }
+								{ [hash('orderTotal^count')]: BSON.serialize([ '2014', 5 ]).toString() }
 							] }
 						] }
 					]
@@ -335,22 +337,22 @@ describe('MongoModel (Map Support)', function() {
 						.then(() => {
 							let docData = objtools.deepCopy(doc.getData());
 							Model.normalizeDocumentIndexedMapValues(docData);
-							expect(docData['_mapidx_aggrs|orderTotal^count']).to.deep.include.members([
+							expect(docData[hash('aggrs|orderTotal^count')]).to.deep.include.members([
 								BSON.serialize([ 'zs', '2014-09', 5 ]).toString(),
 								BSON.serialize([ 'zs', '2014-10', 10 ]).toString(),
 								BSON.serialize([ 'marcos', '2015-01', 3 ]).toString()
 							]);
-							expect(docData['_mapidx_aggrs|orderTotal^total']).to.deep.include.members([
+							expect(docData[hash('aggrs|orderTotal^total')]).to.deep.include.members([
 								BSON.serialize([ 'zs', '2014-09', 2 ]).toString(),
 								BSON.serialize([ 'zs', '2014-10', 1 ]).toString(),
 								BSON.serialize([ 'marcos', '2015-01', 123 ]).toString()
 							]);
-							expect(docData['_mapidx_aggrs^total']) //eslint-disable-line dot-notation
+							expect(docData[hash('aggrs^total')])
 								.to.deep.include.members([
 									BSON.serialize([ 'zs', 3 ]).toString(),
 									BSON.serialize([ 'marcos', 123 ]).toString()
 								]);
-							expect(docData['_mapidx_aggrs|orderTotal^count^total']).to.deep.include.members([
+							expect(docData[hash('aggrs|orderTotal^count^total')]).to.deep.include.members([
 								BSON.serialize([ 'zs', '2014-09', 5, 2 ]).toString(),
 								BSON.serialize([ 'zs', '2014-10', 10, 1 ]).toString(),
 								BSON.serialize([ 'marcos', '2015-01', 3, 123 ]).toString()
