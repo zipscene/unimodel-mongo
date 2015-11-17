@@ -6,7 +6,7 @@ const bson = require('bson');
 const BSON = new bson.BSONPure.BSON();
 const objtools = require('zs-objtools');
 
-const hash = MongoModel.createMapFieldHash;
+const hash = MongoModel.createMapIndexHash;
 
 describe('MongoModel (Map Support)', function() {
 	beforeEach(testScaffold.resetAndConnect);
