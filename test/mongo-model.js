@@ -873,6 +873,36 @@ describe('MongoModel', function() {
 			});
 	});
 
+	it('should group by array fields', function() {
+		let model = createModel('Testings', {
+			foo: [ String ],
+			bar: Number
+		});
+
+		return model.insertMulti([
+			{ foo: [ 'a' ], bar: 1 },
+			{ foo: [ 'a', 'b' ], bar: 2 },
+			{ foo: [ 'b' ], bar: 3 }
+		])
+			.then(() => {
+				return model.aggregate({}, {
+					groupBy: [ { field: 'foo' } ],
+					total: true
+				});
+			})
+			.then((result) => {
+				expect(result).to.deep.equal([
+					{
+						key: [ 'a' ],
+						total: 2
+					}, {
+						key: [ 'b' ],
+						total: 2
+					}
+				]);
+			});
+	});
+
 	it('should allow indexed arrays inside objects', function() {
 		let model = createModel('Testings', {
 			credit: {
