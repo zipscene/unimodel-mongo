@@ -396,11 +396,7 @@ describe('MongoModel', function() {
 
 	it('should run aggregates on nested fields', function() {
 		let model = createModel('Testings', {
-			foo: {
-				bar: {
-					baz: Number
-				}
-			}
+			foo: { bar: { baz: Number } }
 		});
 		return model.insertMulti([
 			{ foo: { bar: { baz: 1 } } },
