@@ -394,6 +394,85 @@ describe('MongoModel', function() {
 			});
 	});
 
+	it('should run aggregates on nested fields', function() {
+		let model = createModel('Testings', {
+			foo: { bar: { baz: Number } }
+		});
+		return model.insertMulti([
+			{ foo: { bar: { baz: 1 } } },
+			{ foo: { bar: { baz: 2 } } },
+			{ foo: { bar: { baz: 3 } } }
+		])
+			.then(() => {
+				return model.aggregate({}, {
+					stats: {
+						'foo.bar.baz': {
+							count: true,
+							avg: true
+						}
+					},
+					total: true
+				});
+			})
+			.then((result) => {
+				let expected = { stats: { 'foo.bar.baz': { count: 3, avg: 2 } }, total: 3 };
+				expect(result).to.deep.equal(expected);
+			});
+	});
+
+	it('should run grouped aggregates on nested fields', function() {
+		let model = createModel('Testings', {
+			biz: { buz: String },
+			foo: {
+				bar: {
+					baz: Number
+				}
+			}
+		});
+		return model.insertMulti([
+			{ biz: { buz: 'red' }, foo: { bar: { baz: 1 } } },
+			{ biz: { buz: 'red' }, foo: { bar: { baz: 2 } } },
+			{ biz: { buz: 'blue' }, foo: { bar: { baz: 3 } } }
+		])
+			.then(() => {
+				return model.aggregate({}, {
+					groupBy: 'biz.buz',
+					stats: {
+						'foo.bar.baz': {
+							count: true,
+							avg: true
+						}
+					},
+					total: true
+				});
+			})
+			.then((result) => {
+				let expected = [
+					{
+						stats: {
+							'foo.bar.baz': {
+								count: 1,
+								avg: 3
+							}
+						},
+						total: 1,
+						key: [ 'blue' ]
+					},
+					{
+						stats: {
+							'foo.bar.baz': {
+								count: 2,
+								avg: 1.5
+							}
+						},
+						total: 2,
+						key: [ 'red' ]
+					}
+				];
+				expect(result).to.deep.equal(expected);
+			});
+	});
+
 	it('should run grouped and ungrouped aggregates with stats', function() {
 		let model = createModel('Testings', {
 			foo: String,
