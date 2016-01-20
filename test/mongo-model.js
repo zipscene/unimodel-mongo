@@ -306,8 +306,8 @@ describe('MongoModel', function() {
 				expect(documents.length).to.equal(5);
 				let commonQuery = createQuery(query);
 				let previousDistance = 0;
-				for (let i = 0; i < documents.length; i++) {
-					commonQuery.matches(documents[i].data);
+				for (let document of documents) {
+					commonQuery.matches(document.data);
 					let currentDistance = commonQuery.getMatchProperty('distance');
 					expect(currentDistance).to.be.at.least(previousDistance);
 					previousDistance = currentDistance;
