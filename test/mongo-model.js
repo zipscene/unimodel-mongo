@@ -290,7 +290,13 @@ describe('MongoModel', function() {
 		records.push({ point: coordinates });
 		for (let r = 0; r < 4; r++) {
 			let xPoint = parseInt(Math.random()*100);
-			let yPoint = parseInt(Math.random()*100);
+			let yPoint = Math.random();
+			if (yPoint >= 0.9) {
+				yPoint = yPoint*10;
+			} else {
+				yPoint = yPoint*100;
+			}
+			yPoint = parseInt(yPoint);
 			records.push({ point: [ xPoint, yPoint ] });
 		}
 		let query = { point: { $near: { $geometry: { type: 'Point', coordinates } } } };
@@ -299,13 +305,11 @@ describe('MongoModel', function() {
 			.then((documents) => {
 				expect(documents.length).to.equal(5);
 				let commonQuery = createQuery(query);
-				let previousDistance;
+				let previousDistance = 0;
 				for (let i = 0; i < documents.length; i++) {
 					commonQuery.matches(documents[i].data);
 					let currentDistance = commonQuery.getMatchProperty('distance');
-					if (previousDistance) {
-						expect(currentDistance).to.be.above(previousDistance);
-					}
+					expect(currentDistance).to.be.at.least(previousDistance);
 					previousDistance = currentDistance;
 				}
 			});
