@@ -4,7 +4,7 @@ const expect = chai.expect;
 const { MongoDocument, createModel } = require('../lib');
 const testScaffold = require('./lib/mongo-scaffold');
 const { map } = require('zs-common-schema');
-
+const { createQuery } = require('zs-common-query');
 chai.use(require('chai-as-promised'));
 
 const keySort = (a, b) => {
@@ -280,6 +280,34 @@ describe('MongoModel', function() {
 				expect(documents.length).to.equal(1);
 				expect(documents[0].data.foo).to.equal(2);
 				expect(documents[0]).to.be.an.instanceof(MongoDocument);
+			});
+	});
+
+	it('should return sorted by distance documents from MongoModel#find when using a $near query', function() {
+		let model = createModel('Testings', { point: { type: 'geopoint', index: true } });
+		let records = [];
+		let coordinates = [ 84, 39 ];
+		records.push({ point: coordinates });
+		for (let r = 0; r < 4; r++) {
+			let xPoint = parseInt(Math.random()*100);
+			let yPoint = parseInt(Math.random()*100);
+			records.push({ point: [ xPoint, yPoint ] });
+		}
+		let query = { point: { $near: { $geometry: { type: 'Point', coordinates } } } };
+		return model.insertMulti(records)
+			.then(() => model.find(query))
+			.then((documents) => {
+				expect(documents.length).to.equal(5);
+				let commonQuery = createQuery(query);
+				let previousDistance;
+				for (let i = 0; i < documents.length; i++) {
+					commonQuery.matches(documents[i].data);
+					let currentDistance = commonQuery.getMatchProperty('distance');
+					if (previousDistance) {
+						expect(currentDistance).to.be.above(previousDistance);
+					}
+					previousDistance = currentDistance;
+				}
 			});
 	});
 
