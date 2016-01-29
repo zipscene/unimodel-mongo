@@ -1014,6 +1014,79 @@ describe('MongoModel', function() {
 			});
 	});
 
+	it('should support the limit option for aggregates', function() {
+		let model = createModel('Testings', {
+			foo: String,
+			bar: Number
+		});
+
+		return model.insertMulti([
+			{ foo: 'a', bar: 1 },
+			{ foo: 'a', bar: 2 },
+			{ foo: 'b', bar: 4 },
+			{ foo: 'c', bar: 8 }
+		])
+			.then(() => {
+				return model.aggregate({}, {
+					groupBy: 'foo',
+					total: true
+				}, { limit: 2 });
+			})
+			.then((result) => {
+				// Note: Can't test for exact matching because exact order (and contents)
+				// of result is undefined here.
+				expect(result.length).to.equal(2);
+			});
+	});
+
+	it('should support the scanLimit option for aggregates', function() {
+		let model = createModel('Testings', {
+			foo: String,
+			bar: Number
+		});
+
+		return model.insertMulti([
+			{ foo: 'a', bar: 1 },
+			{ foo: 'a', bar: 2 },
+			{ foo: 'a', bar: 4 },
+			{ foo: 'b', bar: 8 }
+		])
+			.then(() => {
+				return model.aggregate(
+					{
+						foo: 'a'
+					},
+					{
+						groupBy: 'foo',
+						stats: {
+							bar: {
+								avg: true,
+								count: true
+							}
+						},
+						total: true
+					},
+					{
+						scanLimit: 2
+					}
+				);
+			})
+			.then((result) => {
+				expect(result).to.deep.equal([
+					{
+						key: [ 'a' ],
+						total: 2,
+						stats: {
+							bar: {
+								count: 2,
+								avg: 1.5
+							}
+						}
+					}
+				]);
+			});
+	});
+
 	it('should allow indexed arrays inside objects', function() {
 		let model = createModel('Testings', {
 			credit: {
