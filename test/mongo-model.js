@@ -73,6 +73,25 @@ describe('MongoModel', function() {
 		]);
 	});
 
+	it('should support compound indices', function() {
+		let model = createModel('Testings', {
+			foo: { type: String, index: { foo: 1, bar: 1 } },
+			bar: { type: Number, index: { bar: 1, foo: -1 } },
+			baz: {
+				zap: { type: String, index: { zap: 1, zip: 1 }, sparse: true },
+				zip: { type: Number, index: { zip: 1, zap: -1 } }
+			}
+		}, {
+			initialize: false
+		});
+		expect(model.getIndices()).to.deep.equal([
+			{ spec: { foo: 1, bar: 1 }, options: {} },
+			{ spec: { foo: -1, bar: 1 }, options: {} },
+			{ spec: { 'baz.zap': 1, 'baz.zip': 1 }, options: { sparse: true } },
+			{ spec: { 'baz.zip': 1, 'baz.zap': -1 }, options: {} }
+		]);
+	});
+
 	it('should retrieve keys', function() {
 		let model = createModel('Testings', {
 			foo: String
