@@ -13,6 +13,7 @@ describe('MongoError', function() {
 
 		let collection;
 		let promise = model.collectionPromise
+			.then(_collection => model.ensureIndices(_collection))
 			.then((_collection) => collection = _collection)
 			.then(() => collection.insert({ _id: 'some id', foo: 'bar' }))
 			.then(() => collection.insert({ _id: 'some id', foo: 'baz' }))
@@ -36,6 +37,7 @@ describe('MongoError', function() {
 
 		let collection;
 		let promise = model.collectionPromise
+			.then(_collection => model.ensureIndices(_collection))
 			.then((_collection) => collection = _collection)
 			.then(() => collection.insert({ foo: 'one', bar: 'two' }))
 			.then(() => collection.insert({ foo: 'one', bar: 'two' }))

@@ -146,7 +146,7 @@ describe('MongoModel', function() {
 		expect(() => model5.getKeys()).to.throw(Error);
 	});
 
-	it('should create indices', function() {
+	it('should not create indices on initialization', function() {
 		let model = createModel('Testings', {
 			foo: { type: String, unique: true },
 			bar: { type: 'geopoint', index: true }
@@ -157,7 +157,46 @@ describe('MongoModel', function() {
 		return model.collectionPromise
 			.then((collection) => collection.indexes())
 			.then((indexes) => {
-				expect(indexes.length).to.equal(2);
+				expect(indexes.length).to.equal(0);
+			});
+	});
+
+	it('should create indices when calling ensureIndices', function() {
+		let model = createModel('Testings', {
+			foo: { type: String, unique: true },
+			bar: { type: 'geopoint', index: true }
+		}, {
+			autoIndexId: false
+		});
+
+		return model.collectionPromise
+			.then(collection => {
+				return model.ensureIndices(collection);
+			})
+			.then(() => {
+				expect(model.indexes).to.have.length(2);
+			});
+	});
+
+	it('should create indices in background', function() {
+		let model = createModel('Testings', {
+			foo: { type: String, unique: true, background: true },
+			bar: { type: 'geopoint', index: true, background: true }
+		}, {
+			autoIndexId: false
+		});
+
+		model.index({ foo: 1, bar: 1 }, { background: true });
+
+		return model.collectionPromise
+			.then(collection => {
+				return model.ensureIndices(collection);
+			})
+			.then(() => {
+				expect(model.indexes).to.have.length(3);
+				for (let index of model.indexes) {
+					expect(index).to.have.property('background', true);
+				}
 			});
 	});
 
@@ -171,8 +210,13 @@ describe('MongoModel', function() {
 			});
 		}
 
-		return makeModel().collectionPromise
-			.then(() => makeModel().collectionPromise)
+		let model1 = makeModel();
+		let model2 = makeModel();
+
+		return model1.collectionPromise
+			.then(collection => model1.ensureIndices(collection))
+			.then(() => model2.collectionPromise)
+			.then(collection => model2.ensureIndices(collection))
 			.then((collection) => collection.indexes())
 			.then((indexes) => {
 				expect(indexes.length).to.equal(2);
@@ -300,7 +344,10 @@ describe('MongoModel', function() {
 			records.push({ point: [ xPoint, yPoint ] });
 		}
 		let query = { point: { $near: { $geometry: { type: 'Point', coordinates } } } };
-		return model.insertMulti(records)
+
+		return model.collectionPromise
+			.then(collection => model.ensureIndices(collection))
+			.then(() => model.insertMulti(records) )
 			.then(() => model.find(query))
 			.then((documents) => {
 				expect(documents.length).to.equal(5);

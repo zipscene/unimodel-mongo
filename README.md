@@ -111,6 +111,19 @@ But the following compound index would not be allowed, since it is across multip
 Animal.index({ 'siblingAges.age': 1, 'beds.averageSleepTime': 1 });
 ```
 
+#### Create Index in Background mode
+If you want to create a regular index in background, do:
+```
+let Animal = mongo.createModel('Animal', {
+  name: { type: 'string', index: true, background: true },
+  weight: { type: 'numner' }
+});
+```
+if you want to create a compound index in background, do:
+```
+Animal.index({ name: 1, weight: 1 }, { background: true });
+```
+
 #### Query Conversion
 For a query to properly convert, certain conditions must be met:
 * Map field must be indexed
