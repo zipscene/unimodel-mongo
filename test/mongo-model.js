@@ -92,6 +92,45 @@ describe('MongoModel', function() {
 		]);
 	});
 
+	it('should throw an error on incorrectly-ordered indices', function() {
+		let fn1 = () => {
+			createModel('A', {
+				foo: { type: String, index: { foo: 1, bar: 1 } },
+				bar: String
+			}, { initialize: false });
+		};
+
+		let fn2 = () => {
+			createModel('B', {
+				foo: { type: String, index: { bar: 1, foo: 1 } },
+				bar: String
+			}, { initialize: false });
+		};
+
+		let fn3 = () => {
+			createModel('C', {
+				baz: {
+					foo: { type: String, index: { foo: 1, bar: 1 } },
+					bar: String
+				}
+			}, { initialize: false });
+		};
+
+		let fn4 = () => {
+			createModel('D', {
+				baz: {
+					foo: { type: String, index: { bar: 1, foo: 1 } },
+					bar: String
+				}
+			}, { initialize: false });
+		};
+
+		expect(fn1).to.not.throw(XError);
+		expect(fn2).to.throw(XError);
+		expect(fn3).to.not.throw(XError);
+		expect(fn4).to.throw(XError);
+	});
+
 	it('should retrieve keys', function() {
 		let model = createModel('Testings', {
 			foo: String
