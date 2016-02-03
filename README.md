@@ -115,7 +115,7 @@ Animal.index({ 'siblingAges.age': 1, 'beds.averageSleepTime': 1 });
 If you want to create a regular index in background, do:
 ```
 let Animal = mongo.createModel('Animal', {
-  name: { type: 'string', index: true, background: true },
+  name: { type: 'string', index: true, backgroundIndex: true },
   weight: { type: 'numner' }
 });
 ```
