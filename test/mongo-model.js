@@ -73,6 +73,24 @@ describe('MongoModel', function() {
 		]);
 	});
 
+	it('should convert nested geopoint indexes to 2dsphere', function() {
+		let model = createModel('Testings', {
+			foo: { type: 'geopoint', index: true },
+			bar: [ { type: 'geopoint', index: true } ],
+			baz: {
+				barn: { type: 'geopoint', index: true },
+				bark: [ { type: 'geopoint', index: true } ]
+			}
+		}, { initialize: false });
+
+		expect(model.getIndices()).to.deep.equal([
+			{ spec: { foo: '2dsphere' }, options: {} },
+			{ spec: { bar: '2dsphere' }, options: {} },
+			{ spec: { 'baz.barn': '2dsphere' }, options: {} },
+			{ spec: { 'baz.bark': '2dsphere' }, options: {} }
+		]);
+	});
+
 	it('should support compound indices', function() {
 		let model = createModel('Testings', {
 			foo: { type: String, index: { foo: 1, bar: 1 } },
