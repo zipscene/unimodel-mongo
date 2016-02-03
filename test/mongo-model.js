@@ -73,6 +73,82 @@ describe('MongoModel', function() {
 		]);
 	});
 
+	it('should convert nested geopoint indexes to 2dsphere', function() {
+		let model = createModel('Testings', {
+			foo: { type: 'geopoint', index: true },
+			bar: [ { type: 'geopoint', index: true } ],
+			baz: {
+				barn: { type: 'geopoint', index: true },
+				bark: [ { type: 'geopoint', index: true } ]
+			}
+		}, { initialize: false });
+
+		expect(model.getIndices()).to.deep.equal([
+			{ spec: { foo: '2dsphere' }, options: {} },
+			{ spec: { bar: '2dsphere' }, options: {} },
+			{ spec: { 'baz.barn': '2dsphere' }, options: {} },
+			{ spec: { 'baz.bark': '2dsphere' }, options: {} }
+		]);
+	});
+
+	it('should support compound indices', function() {
+		let model = createModel('Testings', {
+			foo: { type: String, index: { foo: 1, bar: 1 } },
+			bar: { type: Number, index: { bar: 1, foo: -1 } },
+			baz: {
+				zap: { type: String, index: { zap: 1, zip: 1 }, sparse: true },
+				zip: { type: Number, index: { zip: 1, zap: -1 } }
+			}
+		}, {
+			initialize: false
+		});
+		expect(model.getIndices()).to.deep.equal([
+			{ spec: { foo: 1, bar: 1 }, options: {} },
+			{ spec: { foo: -1, bar: 1 }, options: {} },
+			{ spec: { 'baz.zap': 1, 'baz.zip': 1 }, options: { sparse: true } },
+			{ spec: { 'baz.zip': 1, 'baz.zap': -1 }, options: {} }
+		]);
+	});
+
+	it('should throw an error on incorrectly-ordered indices', function() {
+		let fn1 = () => {
+			createModel('A', {
+				foo: { type: String, index: { foo: 1, bar: 1 } },
+				bar: String
+			}, { initialize: false });
+		};
+
+		let fn2 = () => {
+			createModel('B', {
+				foo: { type: String, index: { bar: 1, foo: 1 } },
+				bar: String
+			}, { initialize: false });
+		};
+
+		let fn3 = () => {
+			createModel('C', {
+				baz: {
+					foo: { type: String, index: { foo: 1, bar: 1 } },
+					bar: String
+				}
+			}, { initialize: false });
+		};
+
+		let fn4 = () => {
+			createModel('D', {
+				baz: {
+					foo: { type: String, index: { bar: 1, foo: 1 } },
+					bar: String
+				}
+			}, { initialize: false });
+		};
+
+		expect(fn1).to.not.throw(XError);
+		expect(fn2).to.throw(XError);
+		expect(fn3).to.not.throw(XError);
+		expect(fn4).to.throw(XError);
+	});
+
 	it('should retrieve keys', function() {
 		let model = createModel('Testings', {
 			foo: String
