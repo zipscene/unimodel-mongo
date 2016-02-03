@@ -146,12 +146,28 @@ describe('MongoModel', function() {
 		expect(() => model5.getKeys()).to.throw(Error);
 	});
 
-	it('should not create indices on initialization', function() {
+	it('should create indexes by default', function() {
 		let model = createModel('Testings', {
 			foo: { type: String, unique: true },
 			bar: { type: 'geopoint', index: true }
 		}, {
 			autoIndexId: false
+		});
+
+		return model.collectionPromise
+			.then((collection) => collection.indexes())
+			.then((indexes) => {
+				expect(indexes.length).to.equal(2);
+			});
+	});
+
+	it('should not create indices on initialization if options.autoCreateIndex is set to false', function() {
+		let model = createModel('Testings', {
+			foo: { type: String, unique: true },
+			bar: { type: 'geopoint', index: true }
+		}, {
+			autoIndexId: false,
+			autoCreateIndex: false
 		});
 
 		return model.collectionPromise
@@ -166,7 +182,8 @@ describe('MongoModel', function() {
 			foo: { type: String, unique: true },
 			bar: { type: 'geopoint', index: true }
 		}, {
-			autoIndexId: false
+			autoIndexId: false,
+			autoCreateIndex: false
 		});
 
 		return model.collectionPromise
@@ -180,8 +197,8 @@ describe('MongoModel', function() {
 
 	it('should create indices in background', function() {
 		let model = createModel('Testings', {
-			foo: { type: String, unique: true, background: true },
-			bar: { type: 'geopoint', index: true, background: true }
+			foo: { type: String, unique: true, backgroundIndex: true },
+			bar: { type: 'geopoint', index: true, backgroundIndex: true }
 		}, {
 			autoIndexId: false
 		});
@@ -189,9 +206,6 @@ describe('MongoModel', function() {
 		model.index({ foo: 1, bar: 1 }, { background: true });
 
 		return model.collectionPromise
-			.then(collection => {
-				return model.ensureIndices(collection);
-			})
 			.then(() => {
 				expect(model.indexes).to.have.length(3);
 				for (let index of model.indexes) {
@@ -214,9 +228,7 @@ describe('MongoModel', function() {
 		let model2 = makeModel();
 
 		return model1.collectionPromise
-			.then(collection => model1.ensureIndices(collection))
 			.then(() => model2.collectionPromise)
-			.then(collection => model2.ensureIndices(collection))
 			.then((collection) => collection.indexes())
 			.then((indexes) => {
 				expect(indexes.length).to.equal(2);
@@ -346,7 +358,6 @@ describe('MongoModel', function() {
 		let query = { point: { $near: { $geometry: { type: 'Point', coordinates } } } };
 
 		return model.collectionPromise
-			.then(collection => model.ensureIndices(collection))
 			.then(() => model.insertMulti(records) )
 			.then(() => model.find(query))
 			.then((documents) => {

@@ -98,7 +98,6 @@ describe('MongoDocument', function() {
 		let existingId;
 
 		return model.collectionPromise
-			.then(collection => model.ensureIndices(collection))
 			.then(() => {
 				return document.save()
 					.then((document) => {
