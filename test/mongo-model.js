@@ -62,7 +62,7 @@ describe('MongoModel', function() {
 			initialize: false
 		});
 		model.index({ foo: 1, bar: -1, 'baz.buz': '2dsphere' }, { unique: true, sparse: true });
-		expect(model.getIndices()).to.deep.equal([
+		expect(model.getIndexes()).to.deep.equal([
 			{ spec: { foo: 1 }, options: {} },
 			{ spec: { bar: 1 }, options: { unique: true } },
 			{ spec: { 'baz.buz': '2dsphere' }, options: {} },
@@ -83,7 +83,7 @@ describe('MongoModel', function() {
 			}
 		}, { initialize: false });
 
-		expect(model.getIndices()).to.deep.equal([
+		expect(model.getIndexes()).to.deep.equal([
 			{ spec: { foo: '2dsphere' }, options: {} },
 			{ spec: { bar: '2dsphere' }, options: {} },
 			{ spec: { 'baz.barn': '2dsphere' }, options: {} },
@@ -102,7 +102,7 @@ describe('MongoModel', function() {
 		}, {
 			initialize: false
 		});
-		expect(model.getIndices()).to.deep.equal([
+		expect(model.getIndexes()).to.deep.equal([
 			{ spec: { foo: 1, bar: 1 }, options: {} },
 			{ spec: { foo: -1, bar: 1 }, options: {} },
 			{ spec: { 'baz.zap': 1, 'baz.zip': 1 }, options: { sparse: true } },
