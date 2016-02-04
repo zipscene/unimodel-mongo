@@ -48,7 +48,7 @@ describe('MongoModel', function() {
 			});
 	});
 
-	it('should recognize the appropriate indices', function() {
+	it('should recognize the appropriate indexes', function() {
 		let model = createModel('Testings', {
 			foo: { type: String, index: true },
 			bar: { type: Number, unique: true },
@@ -91,7 +91,7 @@ describe('MongoModel', function() {
 		]);
 	});
 
-	it('should support compound indices', function() {
+	it('should support compound indexes', function() {
 		let model = createModel('Testings', {
 			foo: { type: String, index: { foo: 1, bar: 1 } },
 			bar: { type: Number, index: { bar: 1, foo: -1 } },
@@ -110,7 +110,7 @@ describe('MongoModel', function() {
 		]);
 	});
 
-	it('should throw an error on incorrectly-ordered indices', function() {
+	it('should throw an error on incorrectly-ordered indexes', function() {
 		let fn1 = () => {
 			createModel('A', {
 				foo: { type: String, index: { foo: 1, bar: 1 } },
@@ -222,7 +222,7 @@ describe('MongoModel', function() {
 		expect(() => model5.getKeys()).to.throw(Error);
 	});
 
-	it('should create indices', function() {
+	it('should create indexes', function() {
 		let model = createModel('Testings', {
 			foo: { type: String, unique: true },
 			bar: { type: 'geopoint', index: true }
@@ -237,7 +237,7 @@ describe('MongoModel', function() {
 			});
 	});
 
-	it('should not fail if indices already exist', function() {
+	it('should not fail if indexes already exist', function() {
 		function makeModel() {
 			return createModel('Testings', {
 				foo: { type: String, unique: true },
