@@ -116,7 +116,7 @@ If you want to create a regular index in background, do:
 ```
 let Animal = mongo.createModel('Animal', {
   name: { type: 'string', index: true, backgroundIndex: true },
-  weight: { type: 'numner' }
+  weight: { type: 'number' }
 });
 ```
 if you want to create a compound index in background, do:

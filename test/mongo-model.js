@@ -238,55 +238,67 @@ describe('MongoModel', function() {
 	});
 
 	it('should not create indices on initialization if options.autoCreateIndex is set to false', function() {
-		let model = createModel('Testings', {
-			foo: { type: String, unique: true },
-			bar: { type: 'geopoint', index: true }
-		}, {
-			autoIndexId: false,
-			autoCreateIndex: false
-		});
+		return testScaffold.close()
+			.then(() => testScaffold.connect({ autoCreateIndex: false }) )
+			.then(() => {
+				let model = createModel('Testings', {
+					foo: { type: String, unique: true },
+					bar: { type: 'geopoint', index: true }
+				}, {
+					autoIndexId: false
+				});
 
-		return model.collectionPromise
-			.then((collection) => collection.indexes())
-			.then((indexes) => {
-				expect(indexes.length).to.equal(0);
+				return model.collectionPromise
+					.then((collection) => collection.indexes())
+					.then((indexes) => {
+						expect(indexes.length).to.equal(0);
+					});
 			});
 	});
 
 	it('should create indices when calling ensureIndices', function() {
-		let model = createModel('Testings', {
-			foo: { type: String, unique: true },
-			bar: { type: 'geopoint', index: true }
-		}, {
-			autoIndexId: false,
-			autoCreateIndex: false
-		});
-
-		return model.collectionPromise
-			.then(collection => {
-				return model.ensureIndices(collection);
-			})
+		return testScaffold.close()
+			.then(() => testScaffold.connect({ autoCreateIndex: false }))
 			.then(() => {
-				expect(model.indexes).to.have.length(2);
+				let model = createModel('Testings', {
+					foo: { type: String, unique: true },
+					bar: { type: 'geopoint', index: true }
+				}, {
+					autoIndexId: false,
+					autoCreateIndex: false
+				});
+
+				return model.collectionPromise
+					.then(collection => {
+						return model.ensureIndices(collection);
+					})
+					.then(() => {
+						expect(model.indexes).to.have.length(2);
+					});
 			});
 	});
 
 	it('should create indices in background', function() {
-		let model = createModel('Testings', {
-			foo: { type: String, unique: true, backgroundIndex: true },
-			bar: { type: 'geopoint', index: true, backgroundIndex: true }
-		}, {
-			autoIndexId: false
-		});
-
-		model.index({ foo: 1, bar: 1 }, { background: true });
-
-		return model.collectionPromise
+		return testScaffold.close()
+			.then(() => testScaffold.connect({ autoCreateIndex: true }))
 			.then(() => {
-				expect(model.indexes).to.have.length(3);
-				for (let index of model.indexes) {
-					expect(index).to.have.property('background', true);
-				}
+				let model = createModel('Testings', {
+					foo: { type: String, unique: true },
+					bar: { type: 'geopoint', index: true }
+				}, {
+					autoIndexId: false,
+					backgroundIndex: true
+				});
+
+				model.index({ foo: 1, bar: 1 });
+
+				return model.collectionPromise
+					.then(() => {
+						expect(model.indexes).to.have.length(3);
+						for (let index of model.indexes) {
+							expect(index).to.have.property('background', true);
+						}
+					});
 			});
 	});
 
