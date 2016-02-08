@@ -112,17 +112,23 @@ Animal.index({ 'siblingAges.age': 1, 'beds.averageSleepTime': 1 });
 ```
 
 #### Create Index in Background mode
-If you want to create a regular index in background, do:
+To create index in background mode, pass an option of `background` set to true to model constructor like this:
 ```
 let Animal = mongo.createModel('Animal', {
-  name: { type: 'string', index: true, backgroundIndex: true },
+  name: { type: 'string', index: true },
   weight: { type: 'number' }
+}, {
+  background: true
 });
 ```
-if you want to create a compound index in background, do:
+
+#### Automatically create indexes
+By default, zs-unimodel-mongo creates indexes automatically when setting up database. To disable this behavior, do:
 ```
-Animal.index({ name: 1, weight: 1 }, { background: true });
+let mongo = require('zs-unimodel-mongo');
+mongo.connect({ autoCreateIndex: false });
 ```
+
 
 #### Query Conversion
 For a query to properly convert, certain conditions must be met:
