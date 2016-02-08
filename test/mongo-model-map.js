@@ -35,7 +35,7 @@ describe('MongoModel (Map Support)', function() {
 			model.index({ 'aggrs.orderTotal.total': 1, 'aggrs.orderTotal.count': 1 });
 			return model.collectionPromise
 				.then(() => {
-					expect(model._indices).to.deep.include.members([
+					expect(model._indexes).to.deep.include.members([
 						{ spec: { [hash('aggrs^total')]: 1 }, options: {} },
 						{ spec: { [hash('aggrs|orderTotal^count')]: 1 }, options: {} },
 						{ spec: { [hash('aggrs|orderTotal^total')]: 1 }, options: {} },
