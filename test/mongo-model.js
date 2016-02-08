@@ -359,6 +359,15 @@ describe('MongoModel', function() {
 			});
 	});
 
+	it('should match nothing w/ empty $or', function() {
+		let model = createModel('Testings', { foo: String });
+		let records = [ { foo: 'bar' }, { foo: 'baz' } ];
+		let query = { $or: [] };
+		return model.insertMulti(records)
+			.then(() => model.find(query))
+			.then((records) => expect(records).to.be.empty);
+	});
+
 	it('should return sorted by distance documents from MongoModel#find when using a $near query', function() {
 		let model = createModel('Testings', { point: { type: 'geopoint', index: true } });
 		let records = [];
