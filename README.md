@@ -112,14 +112,10 @@ Animal.index({ 'siblingAges.age': 1, 'beds.averageSleepTime': 1 });
 ```
 
 #### Create Index in Background mode
-To create index in background mode, pass an option of `background` set to true to model constructor like this:
+To create index in background mode, pass an option of `backgroundIndex` set to true to `connect()` method, like this:
 ```
-let Animal = mongo.createModel('Animal', {
-  name: { type: 'string', index: true },
-  weight: { type: 'number' }
-}, {
-  background: true
-});
+let mongo = require('zs-unimodel-mongo');
+mongo.connect({ backgroundIndex: true });
 ```
 
 #### Automatically create indexes
