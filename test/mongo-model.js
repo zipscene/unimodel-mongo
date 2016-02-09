@@ -280,7 +280,10 @@ describe('MongoModel', function() {
 
 	it('should create indices in background', function() {
 		return testScaffold.close()
-			.then(() => testScaffold.connect({ autoCreateIndex: true }))
+			.then(() => testScaffold.connect({
+				autoCreateIndex: true,
+				backgroundIndex: true
+			}))
 			.then(() => {
 				let model = createModel('Testings', {
 					foo: { type: String, unique: true },
