@@ -31,8 +31,8 @@ function reset() {
  * @method connect
  * @return {Promise} - Resolves when successfully connected.
  */
-function connect() {
-	return mongo.connect(config.uri);
+function connect(options = {}) {
+	return mongo.connect(config.uri, options);
 }
 
 /**
@@ -45,10 +45,16 @@ function resetAndConnect() {
 	return reset().then(connect);
 }
 
+function close() {
+	return Promise.resolve()
+		.then(() => mongo.db.close());
+}
+
 
 module.exports = {
 	config,
 	reset,
 	connect,
-	resetAndConnect
+	resetAndConnect,
+	close
 };

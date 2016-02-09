@@ -96,15 +96,19 @@ describe('MongoDocument', function() {
 		let document2 = new MongoDocument(model, { foo: 'baz' });
 
 		let existingId;
-		return document.save()
-			.then((document) => {
-				existingId = document.getInternalId();
-				return document2.save();
-			})
-			.then((document2) => {
-				document2.setInternalId(existingId);
 
-				return expect(document2.save()).to.be.rejectedWith(MongoError);
+		return model.collectionPromise
+			.then(() => {
+				return document.save()
+					.then((document) => {
+						existingId = document.getInternalId();
+						return document2.save();
+					})
+					.then((document2) => {
+						document2.setInternalId(existingId);
+
+						return expect(document2.save()).to.be.rejectedWith(MongoError);
+					});
 			});
 	});
 

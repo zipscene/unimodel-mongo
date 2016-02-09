@@ -222,7 +222,7 @@ describe('MongoModel', function() {
 		expect(() => model5.getKeys()).to.throw(Error);
 	});
 
-	it('should create indexes', function() {
+	it('should create indexes by default', function() {
 		let model = createModel('Testings', {
 			foo: { type: String, unique: true },
 			bar: { type: 'geopoint', index: true }
@@ -237,7 +237,75 @@ describe('MongoModel', function() {
 			});
 	});
 
-	it('should not fail if indexes already exist', function() {
+	it('should not create indices on initialization if options.autoCreateIndex is set to false', function() {
+		return testScaffold.close()
+			.then(() => testScaffold.connect({ autoCreateIndex: false }) )
+			.then(() => {
+				let model = createModel('Testings', {
+					foo: { type: String, unique: true },
+					bar: { type: 'geopoint', index: true }
+				}, {
+					autoIndexId: false
+				});
+
+				return model.collectionPromise
+					.then((collection) => collection.indexes())
+					.then((indexes) => {
+						expect(indexes.length).to.equal(0);
+					});
+			});
+	});
+
+	it('should create indices when calling ensureIndexes', function() {
+		return testScaffold.close()
+			.then(() => testScaffold.connect({ autoCreateIndex: false }))
+			.then(() => {
+				let model = createModel('Testings', {
+					foo: { type: String, unique: true },
+					bar: { type: 'geopoint', index: true }
+				}, {
+					autoIndexId: false,
+					autoCreateIndex: false
+				});
+
+				return model.collectionPromise
+					.then(collection => {
+						return model.ensureIndexes(collection);
+					})
+					.then(() => {
+						expect(model.indexes).to.have.length(2);
+					});
+			});
+	});
+
+	it('should create indices in background', function() {
+		return testScaffold.close()
+			.then(() => testScaffold.connect({
+				autoCreateIndex: true,
+				backgroundIndex: true
+			}))
+			.then(() => {
+				let model = createModel('Testings', {
+					foo: { type: String, unique: true },
+					bar: { type: 'geopoint', index: true }
+				}, {
+					autoIndexId: false,
+					backgroundIndex: true
+				});
+
+				model.index({ foo: 1, bar: 1 });
+
+				return model.collectionPromise
+					.then(() => {
+						expect(model.indexes).to.have.length(3);
+						for (let index of model.indexes) {
+							expect(index).to.have.property('background', true);
+						}
+					});
+			});
+	});
+
+	it('should not fail if indices already exist', function() {
 		function makeModel() {
 			return createModel('Testings', {
 				foo: { type: String, unique: true },
@@ -247,8 +315,11 @@ describe('MongoModel', function() {
 			});
 		}
 
-		return makeModel().collectionPromise
-			.then(() => makeModel().collectionPromise)
+		let model1 = makeModel();
+		let model2 = makeModel();
+
+		return model1.collectionPromise
+			.then(() => model2.collectionPromise)
 			.then((collection) => collection.indexes())
 			.then((indexes) => {
 				expect(indexes.length).to.equal(2);
@@ -376,7 +447,9 @@ describe('MongoModel', function() {
 			records.push({ point: [ xPoint, yPoint ] });
 		}
 		let query = { point: { $near: { $geometry: { type: 'Point', coordinates } } } };
-		return model.insertMulti(records)
+
+		return model.collectionPromise
+			.then(() => model.insertMulti(records) )
 			.then(() => model.find(query))
 			.then((documents) => {
 				expect(documents.length).to.equal(5);

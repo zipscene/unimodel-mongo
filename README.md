@@ -111,6 +111,21 @@ But the following compound index would not be allowed, since it is across multip
 Animal.index({ 'siblingAges.age': 1, 'beds.averageSleepTime': 1 });
 ```
 
+#### Create Index in Background mode
+To create index in background mode, pass an option of `backgroundIndex` set to true to `connect()` method, like this:
+```
+let mongo = require('zs-unimodel-mongo');
+mongo.connect({ backgroundIndex: true });
+```
+
+#### Automatically create indexes
+By default, zs-unimodel-mongo creates indexes automatically when setting up database. To disable this behavior, do:
+```
+let mongo = require('zs-unimodel-mongo');
+mongo.connect({ autoCreateIndex: false });
+```
+
+
 #### Query Conversion
 For a query to properly convert, certain conditions must be met:
 * Map field must be indexed
