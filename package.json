@@ -24,7 +24,7 @@
     "mongodb": "^2.0.39",
     "pasync": "^1.4.0",
     "xerror": "^1.0.0",
-    "zs-common-query": "^1.9.0",
+    "zs-common-query": "^1.9.1",
     "zs-common-schema": "^1.7.3",
     "zs-objtools": "^1.4.0",
     "zs-unimodel": "^0.5.25",
