@@ -3,7 +3,7 @@ const XError = require('xerror');
 const expect = chai.expect;
 const { MongoDocument, createModel } = require('../lib');
 const testScaffold = require('./lib/mongo-scaffold');
-const { map } = require('zs-common-schema');
+const { createSchema, map } = require('zs-common-schema');
 const { createQuery } = require('zs-common-query');
 chai.use(require('chai-as-promised'));
 
@@ -108,6 +108,32 @@ describe('MongoModel', function() {
 			{ spec: { 'baz.zap': 1, 'baz.zip': 1 }, options: { sparse: true } },
 			{ spec: { 'baz.zip': 1, 'baz.zap': -1 }, options: {} }
 		]);
+	});
+
+	it('should remove redundant indexes', function() {
+		let model = createModel('Testings', {
+			foo: String,
+			bar: Number,
+			baz: Boolean,
+			quux: String
+		}, {
+			initialize: false
+		});
+		model.index({ foo: 1 });
+		model.index({ bar: 1 });
+		model.index({ foo: 1, bar: 1 });
+		model.index({ foo: 1, bar: 1, baz: 1 }, { someOption: true });
+		model.index({ foo: 1, bar: 1, baz: 1, quux: 1 }, { someOption: true });
+		// indexes are deduplicated on initCollection
+		return model.initCollection()
+			.then(() => {
+				let indexes = model.getIndexes();
+				expect(indexes).to.deep.equal([
+					{ spec: { bar: 1 }, options: {} },
+					{ spec: { foo: 1, bar: 1 }, options: {} },
+					{ spec: { foo: 1, bar: 1, baz: 1, quux: 1 }, options: { someOption: true } }
+				]);
+			});
 	});
 
 	it('should throw an error on incorrectly-ordered indexes', function() {
