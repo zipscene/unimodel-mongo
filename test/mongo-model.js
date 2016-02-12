@@ -126,16 +126,13 @@ describe('MongoModel', function() {
 		model.index({ foo: 1, bar: 1, baz: 1, quux: 1 }, { someOption: true });
 		model.index({ foo: 1, bar: 1, baz: 1, quux: -1 }, { someOption: true });
 		// indexes are deduplicated on initCollection
-		return model.initCollection()
-			.then(() => {
-				let indexes = model.getIndexes();
-				expect(indexes).to.deep.equal([
-					{ spec: { bar: 1 }, options: {} },
-					{ spec: { foo: 1, bar: 1 }, options: {} },
-					{ spec: { foo: 1, bar: 1, baz: 1, quux: 1 }, options: { someOption: true } },
-					{ spec: { foo: 1, bar: 1, baz: 1, quux: -1 }, options: { someOption: true } }
-				]);
-			});
+		let indexes =  model._removeRedundantIndexes();
+		expect(indexes).to.deep.equal([
+			{ spec: { bar: 1 }, options: {} },
+			{ spec: { foo: 1, bar: 1 }, options: {} },
+			{ spec: { foo: 1, bar: 1, baz: 1, quux: 1 }, options: { someOption: true } },
+			{ spec: { foo: 1, bar: 1, baz: 1, quux: -1 }, options: { someOption: true } }
+		]);
 	});
 
 	it('should throw an error on incorrectly-ordered indexes', function() {
