@@ -124,6 +124,7 @@ describe('MongoModel', function() {
 		model.index({ foo: 1, bar: 1 });
 		model.index({ foo: 1, bar: 1, baz: 1 }, { someOption: true });
 		model.index({ foo: 1, bar: 1, baz: 1, quux: 1 }, { someOption: true });
+		model.index({ foo: 1, bar: 1, baz: 1, quux: -1 }, { someOption: true });
 		// indexes are deduplicated on initCollection
 		return model.initCollection()
 			.then(() => {
@@ -131,7 +132,8 @@ describe('MongoModel', function() {
 				expect(indexes).to.deep.equal([
 					{ spec: { bar: 1 }, options: {} },
 					{ spec: { foo: 1, bar: 1 }, options: {} },
-					{ spec: { foo: 1, bar: 1, baz: 1, quux: 1 }, options: { someOption: true } }
+					{ spec: { foo: 1, bar: 1, baz: 1, quux: 1 }, options: { someOption: true } },
+					{ spec: { foo: 1, bar: 1, baz: 1, quux: -1 }, options: { someOption: true } }
 				]);
 			});
 	});
