@@ -3,7 +3,7 @@ const XError = require('xerror');
 const expect = chai.expect;
 const { MongoDocument, createModel } = require('../lib');
 const testScaffold = require('./lib/mongo-scaffold');
-const { createSchema, map } = require('zs-common-schema');
+const { map } = require('zs-common-schema');
 const { createQuery } = require('zs-common-query');
 chai.use(require('chai-as-promised'));
 
