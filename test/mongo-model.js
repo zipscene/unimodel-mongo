@@ -110,6 +110,31 @@ describe('MongoModel', function() {
 		]);
 	});
 
+	it('should remove redundant indexes', function() {
+		let model = createModel('Testings', {
+			foo: String,
+			bar: Number,
+			baz: Boolean,
+			quux: String
+		}, {
+			initialize: false
+		});
+		model.index({ foo: 1 });
+		model.index({ bar: 1 });
+		model.index({ foo: 1, bar: 1 });
+		model.index({ foo: 1, bar: 1, baz: 1 }, { someOption: true });
+		model.index({ foo: 1, bar: 1, baz: 1, quux: 1 }, { someOption: true });
+		model.index({ foo: 1, bar: 1, baz: 1, quux: -1 }, { someOption: true });
+		// indexes are deduplicated on initCollection
+		let indexes =  model._removeRedundantIndexes();
+		expect(indexes).to.deep.equal([
+			{ spec: { bar: 1 }, options: {} },
+			{ spec: { foo: 1, bar: 1 }, options: {} },
+			{ spec: { foo: 1, bar: 1, baz: 1, quux: 1 }, options: { someOption: true } },
+			{ spec: { foo: 1, bar: 1, baz: 1, quux: -1 }, options: { someOption: true } }
+		]);
+	});
+
 	it('should throw an error on incorrectly-ordered indexes', function() {
 		let fn1 = () => {
 			createModel('A', {
