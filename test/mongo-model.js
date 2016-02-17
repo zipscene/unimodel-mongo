@@ -1258,6 +1258,37 @@ describe('MongoModel', function() {
 			});
 	});
 
+	it('#aggregateMulti should return an aggregate result even if the query doesnt match any documents', function() {
+		let model = createModel('Testings', {
+			foo: Number,
+			bar: Boolean,
+			baz: String
+		});
+
+		let query = { $nor: [ {} ] };
+		let aggregateSpec = {
+			a: {
+				stats: { foo: { avg: true, count: true, max: true } },
+				total: true
+			},
+			b: {
+				stats: { bar: { count: true } }
+			},
+			c: {
+				groupBy: [ { field: 'baz' } ]
+			}
+		};
+
+		return model.aggregateMulti(query, aggregateSpec)
+			.then((result) => {
+				expect(result).to.deep.equal({
+					a: { total: 0 },
+					b: {},
+					c: []
+				});
+			});
+	});
+
 	it('should allow indexed arrays inside objects', function() {
 		let model = createModel('Testings', {
 			credit: {
