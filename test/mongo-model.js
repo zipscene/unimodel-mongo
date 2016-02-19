@@ -1272,7 +1272,7 @@ describe('MongoModel', function() {
 	// intefere with the normal test run.
 
 	it.skip('should support timeout option in MongoModel#count', function() {
-		this.timeout(5000);
+		this.timeout(6000);
 
 		let model = createModel('Testings', { foo: Boolean });
 
