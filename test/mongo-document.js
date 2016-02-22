@@ -34,6 +34,25 @@ describe('MongoDocument', function() {
 		expect(doc.getData().biz).to.equal('baz');
 	});
 
+	it('should trigger pre-save hooks on init', function() {
+		this.timeout(100000);
+		let model = createModel('testings', { foo: String });
+		let document = new MongoDocument(model, { foo: 'bar' });
+
+		document.data.foo = 'baz';
+
+		model.hook('pre-save', function(modelRef) {
+			modelRef.data.foo = 'zoo';
+			expect(document.data).to.deep.equal({ foo: 'zoo' });
+			expect(this).to.equal(model);
+		});
+
+		return document.save()
+			.then((document) => {
+				expect(document.getData().foo).to.equal('zoo');
+			});
+	});
+
 	it('should move internal id to the instance', function() {
 		let model = createModel('testings', { foo: Number });
 
@@ -47,7 +66,7 @@ describe('MongoDocument', function() {
 			});
 	});
 
-	it('should save changes to a new document', function() {
+	it.only('should save changes to a new document', function() {
 		let model = createModel('testings', { foo: String });
 		let document = new MongoDocument(model, { foo: 'bar' });
 
@@ -55,7 +74,17 @@ describe('MongoDocument', function() {
 
 		return document.save()
 			.then((document) => {
+
 				expect(document.data).to.deep.equal({ foo: 'baz' });
+
+				// {
+				// 	"__rev": 1
+				// 	"_id": {
+				// 	  "_bsontype": "ObjectID"
+				// 	  "id": "VË\u001eÙ2íc,\"ü¦Ô"
+				// 	}
+				// 	"foo": "baz"
+				// }
 			});
 	});
 
