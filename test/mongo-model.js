@@ -1319,4 +1319,76 @@ describe('MongoModel', function() {
 			});
 	});
 
+	// The following three tests were used to develop the timeout option, but they are sensitive to
+	// the speed of the machine running them and are thus not guaranteed to produce useful results.
+	// They're included in case they're needed again, but marked to be skipped so that they don't
+	// intefere with the normal test run.
+
+	it.skip('should support timeout option in MongoModel#count', function() {
+		this.timeout(6000);
+
+		let model = createModel('Testings', { foo: Boolean });
+
+		let records = [];
+		for (let i = 0; i < 50000; i++) {
+			records.push({ foo: true });
+		}
+
+		return model.insertMulti(records)
+		.then(() => model.count({ foo: true }, { timeout: 0.001 }))
+		.then(
+			() => {
+				throw new Error('count should have failed');
+			},
+			(ex) => {
+				expect(ex).to.be.an.instanceof(XError);
+				expect(ex.code).to.equal(XError.TIMED_OUT);
+				expect(ex.cause).to.be.an.instanceof(Error);
+			}
+		);
+	});
+
+	it.skip('should support timeout option in MongoModel#find', function() {
+		let model = createModel('Testings', { foo: Number, bar: Boolean, baz: Boolean });
+
+		let records = [];
+		for (let r = 0; r < 10000; r++) {
+			records.push({ foo: r, bar: true, baz: true });
+		}
+
+		return model.insertMulti(records)
+		.then(() => model.find({}, { timeout: 0.001 }))
+		.then(
+			() => {
+				throw new Error('find should have failed');
+			},
+			(ex) => {
+				expect(ex).to.be.an.instanceof(XError);
+				expect(ex.code).to.equal(XError.TIMED_OUT);
+				expect(ex.cause).to.be.an.instanceof(	Error);
+			}
+		);
+	});
+
+	it.skip('should support timeout option in MongoModel#aggregate', function() {
+		let model = createModel('Testings', { foo: Number, bar: Boolean, baz: Boolean });
+
+		let records = [];
+		for (let r = 0; r < 10000; r++) {
+			records.push({ foo: r, bar: true, baz: true });
+		}
+
+		return model.insertMulti(records)
+		.then(() => model.aggregate({}, { stats: 'foo' }, { timeout: 0.001 }))
+		.then(
+			() => {
+				throw new Error('aggregate should have failed');
+			},
+			(ex) => {
+				expect(ex).to.be.an.instanceof(XError);
+				expect(ex.code).to.equal(XError.TIMED_OUT);
+				expect(ex.cause).to.be.an.instanceof(Error);
+			}
+		);
+	});
 });
