@@ -42,6 +42,7 @@ describe('MongoDocument', function() {
 		document.data.foo = 'baz';
 
 		model.hook('pre-save', function(modelRef) {
+			expect(document.data).to.deep.equal({ foo: 'baz' });
 			modelRef.data.foo = 'zoo';
 			expect(document.data).to.deep.equal({ foo: 'zoo' });
 			expect(this).to.equal(model);
@@ -69,7 +70,6 @@ describe('MongoDocument', function() {
 	it('should save changes to a new document', function() {
 		let model = createModel('testings', { foo: String });
 		let document = new MongoDocument(model, { foo: 'bar' });
-
 		document.data.foo = 'baz';
 
 		return document.save()
@@ -85,10 +85,25 @@ describe('MongoDocument', function() {
 		return document.save()
 			.then((document) => {
 				document.data.foo = 'baz';
-
 				return document.save();
 			})
 			.then((document) => {
+				expect(document.data).to.deep.equal({ foo: 'baz' });
+			});
+	});
+
+	it('should update revision number on existing document', function() {
+		let model = createModel('testings', { foo: String });
+		let document = new MongoDocument(model, { foo: 'bar' });
+		let revisionNumber = document._revisionNumber;
+
+		return document.save()
+			.then((document) => {
+				document.data.foo = 'baz';
+				return document.save();
+			})
+			.then((document) => {
+				expect(++revisionNumber).to.equal(document._revisionNumber);
 				expect(document.data).to.deep.equal({ foo: 'baz' });
 			});
 	});
