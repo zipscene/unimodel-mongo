@@ -66,7 +66,7 @@ describe('MongoDocument', function() {
 			});
 	});
 
-	it.only('should save changes to a new document', function() {
+	it('should save changes to a new document', function() {
 		let model = createModel('testings', { foo: String });
 		let document = new MongoDocument(model, { foo: 'bar' });
 
@@ -74,17 +74,7 @@ describe('MongoDocument', function() {
 
 		return document.save()
 			.then((document) => {
-
 				expect(document.data).to.deep.equal({ foo: 'baz' });
-
-				// {
-				// 	"__rev": 1
-				// 	"_id": {
-				// 	  "_bsontype": "ObjectID"
-				// 	  "id": "VË\u001eÙ2íc,\"ü¦Ô"
-				// 	}
-				// 	"foo": "baz"
-				// }
 			});
 	});
 
