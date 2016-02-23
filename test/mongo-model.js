@@ -303,6 +303,56 @@ describe('MongoModel', function() {
 			});
 	});
 
+	it('should remove indexes that are not in the schema when calling removeIndexes', function() {
+		return testScaffold.close()
+			.then(() => testScaffold.connect({ autoCreateIndex: true }))
+			.then(() => {
+				let model = createModel('Testings', {
+					foo: { type: String, unique: true },
+					bar: { type: 'geopoint', index: true }
+				}, {
+					autoIndexId: false
+				});
+
+				let collection;
+				return model.collectionPromise
+					.then(mongoCollection => {
+						collection = mongoCollection;
+					})
+					.then(() => collection.createIndex({ baz: 1 }))
+					.then(() => model.removeIndexes(collection))
+					.then(() => collection.indexes())
+					.then(indexes => {
+						expect(indexes).to.have.length(2);
+					});
+			});
+	});
+
+	it('should synchronize indexes with schema when calling synchronizeIndexes', function() {
+		return testScaffold.close()
+			.then(() => testScaffold.connect({ autoCreateIndex: false }))
+			.then(() => {
+				let model = createModel('Testings', {
+					foo: { type: String, unique: true },
+					bar: { type: 'geopoint', index: true }
+				}, {
+					autoIndexId: false
+				});
+
+				let collection;
+				return model.collectionPromise
+					.then(mongoCollection => {
+						collection = mongoCollection;
+					})
+					.then(() => collection.createIndex({ baz: 1 }))
+					.then(() => model.synchronizeIndexes(collection))
+					.then(() => collection.indexes())
+					.then(indexes => {
+						expect(indexes).to.have.length(2);
+					});
+			});
+	});
+
 	it('should create indices in background', function() {
 		return testScaffold.close()
 			.then(() => testScaffold.connect({
