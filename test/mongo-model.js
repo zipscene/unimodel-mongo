@@ -303,53 +303,85 @@ describe('MongoModel', function() {
 			});
 	});
 
+	/* Helper function for the following tests.
+	 * Asserts that the indexes on a mongo collection match those specified in a model's schema.
+	 * Only specs are checked for each index, not options. */
+	function checkIndexes(collection, model) {
+		function hashByKeys(obj) {
+			return Object.keys(obj).sort().join('.');
+		}
+
+		function compareByKeys(a, b) {
+			return hashByKeys(a) < hashByKeys(b);
+		}
+
+		return collection.indexes()
+			.then(collectionIndexes => {
+				// Specs must be sorted before check, otherwise the order may differ.
+				let collectionSpecs = collectionIndexes.map(index => index.key).sort(compareByKeys);
+				let modelSpecs = model.getIndexes().map(index => index.spec).sort(compareByKeys);
+
+				expect(collectionSpecs).to.deep.equal(modelSpecs);
+			});
+	}
+
 	it('should remove indexes that are not in the schema when calling removeIndexes', function() {
 		return testScaffold.close()
 			.then(() => testScaffold.connect({ autoCreateIndex: true }))
 			.then(() => {
-				let model = createModel('Testings', {
+				let model1 = createModel('Testings', {
 					foo: { type: String, unique: true },
-					bar: { type: 'geopoint', index: true }
+					bar: { type: 'geopoint', index: true },
+					baz: { type: String, index: true }
 				}, {
 					autoIndexId: false
 				});
 
+				let model2 = createModel('Testings', {
+					foo: { type: String, unique: true },
+					bar: { type: 'geopoint', index: true }
+				}, {
+					autoIndexId: false,
+					initialize: false
+				});
+
 				let collection;
-				return model.collectionPromise
-					.then(mongoCollection => {
-						collection = mongoCollection;
+				return model1.collectionPromise
+					.then(model1Collection => {
+						collection = model1Collection;
 					})
-					.then(() => collection.createIndex({ baz: 1 }))
-					.then(() => model.removeIndexes(collection))
-					.then(() => collection.indexes())
-					.then(indexes => {
-						expect(indexes).to.have.length(2);
-					});
+					.then(() => checkIndexes(collection, model1))
+					.then(() => model2.removeIndexes(collection))
+					.then(() => checkIndexes(collection, model2));
 			});
 	});
 
 	it('should synchronize indexes with schema when calling synchronizeIndexes', function() {
 		return testScaffold.close()
-			.then(() => testScaffold.connect({ autoCreateIndex: false }))
+			.then(() => testScaffold.connect({ autoCreateIndex: true }))
 			.then(() => {
-				let model = createModel('Testings', {
-					foo: { type: String, unique: true },
-					bar: { type: 'geopoint', index: true }
+				let model1 = createModel('Testings', {
+					foo: { type: String, unique: true }
 				}, {
 					autoIndexId: false
 				});
 
+				let model2 = createModel('Testings', {
+					bar: { type: 'geopoint', index: true },
+					baz: { type: String, index: true }
+				}, {
+					autoIndexId: false,
+					initialize: false
+				});
+
 				let collection;
-				return model.collectionPromise
-					.then(mongoCollection => {
-						collection = mongoCollection;
+				return model1.collectionPromise
+					.then(model1Collection => {
+						collection = model1Collection;
 					})
-					.then(() => collection.createIndex({ baz: 1 }))
-					.then(() => model.synchronizeIndexes(collection))
-					.then(() => collection.indexes())
-					.then(indexes => {
-						expect(indexes).to.have.length(2);
-					});
+					.then(() => checkIndexes(collection, model1))
+					.then(() => model2.synchronizeIndexes(collection))
+					.then(() => checkIndexes(collection, model2));
 			});
 	});
 
