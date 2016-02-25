@@ -1,10 +1,11 @@
 const chai = require('chai');
 const XError = require('xerror');
-const expect = chai.expect;
+const { expect } = chai;
 const { MongoDocument, createModel } = require('../lib');
 const testScaffold = require('./lib/mongo-scaffold');
 const { map } = require('zs-common-schema');
 const { createQuery } = require('zs-common-query');
+
 chai.use(require('chai-as-promised'));
 
 const keySort = (a, b) => {
@@ -895,6 +896,7 @@ describe('MongoModel', function() {
 			baz: Date
 		});
 
+		let error;
 		return model.insertMulti([
 			{ foo: -6, bar: 'b', baz: new Date('2005') },
 			{ foo: -5, bar: 'b', baz: new Date('2005') },
@@ -944,14 +946,17 @@ describe('MongoModel', function() {
 				].sort(keySort));
 			})
 			.then(() => {
-				let fn = () => {
-					return model.aggregate({}, {
-						groupBy: [ { field: 'baz', interval: 'P1Y' } ],
-						total: true
+				return model.aggregate({}, {
+					groupBy: [ { field: 'baz', interval: 'P1Y' } ],
+					total: true
+				})
+					.catch((err) => {
+						error = err;
 					});
-				};
-
-				expect(fn).to.throw(XError);
+			})
+			.then(() => {
+				expect(error).to.be.an.instanceof(XError);
+				expect(error.code).to.equal(XError.UNSUPPORTED_OPERATION);
 			});
 	});
 
