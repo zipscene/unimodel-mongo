@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const chai = require('chai');
 const XError = require('xerror');
 const expect = chai.expect;
@@ -312,14 +313,14 @@ describe('MongoModel', function() {
 		}
 
 		function compareByKeys(a, b) {
-			return hashByKeys(a) < hashByKeys(b);
+			return hashByKeys(a) > hashByKeys(b);
 		}
 
 		return collection.indexes()
-			.then(collectionIndexes => {
+			.then((collectionIndexes) => {
 				// Specs must be sorted before check, otherwise the order may differ.
-				let collectionSpecs = collectionIndexes.map(index => index.key).sort(compareByKeys);
-				let modelSpecs = model.getIndexes().map(index => index.spec).sort(compareByKeys);
+				let collectionSpecs = _.pluck(collectionIndexes, 'key').sort(compareByKeys);
+				let modelSpecs = _.pluck(model.getIndexes(), 'spec').sort(compareByKeys);
 
 				expect(collectionSpecs).to.deep.equal(modelSpecs);
 			});
@@ -347,7 +348,7 @@ describe('MongoModel', function() {
 
 				let collection;
 				return model1.collectionPromise
-					.then(model1Collection => {
+					.then((model1Collection) => {
 						collection = model1Collection;
 					})
 					.then(() => checkIndexes(collection, model1))
@@ -376,7 +377,7 @@ describe('MongoModel', function() {
 
 				let collection;
 				return model1.collectionPromise
-					.then(model1Collection => {
+					.then((model1Collection) => {
 						collection = model1Collection;
 					})
 					.then(() => checkIndexes(collection, model1))
