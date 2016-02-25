@@ -1,4 +1,5 @@
 const chai = require('chai');
+const XError = require('xerror');
 const { expect } = chai;
 const { MongoDocument, MongoError, createModel } = require('../lib');
 const { Model } = require('zs-unimodel');
@@ -172,20 +173,36 @@ describe('MongoDocument', function() {
 		let model = createModel('testings', { foo: Number, bar: Number });
 		let model2 = createModel('testings', { foo: Number, bar: Number }, { allowSavingPartials: false });
 
-		return model.insert({ foo: 1, bar: 1 })
+		let error1, error2;
+		return Promise.resolve()
+			.then(() => model.insert({ foo: 1, bar: 1 }))
 			.then(() => model.find({ foo: 1 }, { fields: [ 'bar' ] }))
 			.then((documents) => {
 				let document = documents[0];
 				document.data.foo = 2;
 
-				expect(() => document.save()).to.not.throw(Error);
+				return document.save()
+					.catch((err) => {
+						error1 = err;
+					});
 			})
+			.then(() => {
+				expect(error1).to.be.undefined;
+			})
+			.then(() => model2.insert({ foo: 1, bar: 1 }))
 			.then(() => model2.find({ foo: 1 }, { fields: [ 'bar' ] }))
 			.then((documents) => {
 				let document = documents[0];
 				document.data.foo = 2;
 
-				expect(() => document.save()).to.throw(Error);
+				return document.save()
+					.catch((err) => {
+						error2 = err;
+					});
+			})
+			.then(() => {
+				expect(error2).to.be.an.instanceof(XError);
+				expect(error2.code).to.equal(XError.UNSUPPORTED_OPERATION);
 			});
 	});
 
