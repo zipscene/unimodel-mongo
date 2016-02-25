@@ -1,7 +1,7 @@
 const chai = require('chai');
-const expect = chai.expect;
+const { expect } = chai;
 const { MongoDocument, MongoError, createModel } = require('../lib');
-const Model = require('zs-unimodel').Model;
+const { Model } = require('zs-unimodel');
 const testScaffold = require('./lib/mongo-scaffold');
 
 chai.use(require('chai-as-promised'));
