@@ -294,10 +294,7 @@ describe('MongoModel', function() {
 					autoCreateIndex: false
 				});
 
-				return model.collectionPromise
-					.then(collection => {
-						return model.ensureIndexes(collection);
-					})
+				return model.ensureIndexes()
 					.then(() => {
 						expect(model.indexes).to.have.length(2);
 					});
@@ -305,9 +302,9 @@ describe('MongoModel', function() {
 	});
 
 	/* Helper function for the following tests.
-	 * Asserts that the indexes on a mongo collection match those specified in a model's schema.
+	 * Asserts that the indexes on a MongoModel's collection match those specified in its schema.
 	 * Only specs are checked for each index, not options. */
-	function checkIndexes(collection, model) {
+	function checkIndexes(model) {
 		function hashByKeys(obj) {
 			return Object.keys(obj).sort().join('.');
 		}
@@ -316,19 +313,24 @@ describe('MongoModel', function() {
 			return hashByKeys(a) > hashByKeys(b);
 		}
 
-		return collection.indexes()
+		return model.collectionPromise
+			.then((collection) => collection.indexes())
 			.then((collectionIndexes) => {
-				// Specs must be sorted before check, otherwise the order may differ.
-				let collectionSpecs = _.pluck(collectionIndexes, 'key').sort(compareByKeys);
-				let modelSpecs = _.pluck(model.getIndexes(), 'spec').sort(compareByKeys);
+				// Ensure indexes property is up to date.
+				expect(model.indexes).to.deep.equal(collectionIndexes);
 
-				expect(collectionSpecs).to.deep.equal(modelSpecs);
+				// Specs must be sorted, otherwise the order may differ.
+				let collectionSpecs = _.pluck(model.indexes, 'key').sort(compareByKeys);
+				let schemaSpecs = _.pluck(model.getIndexes(), 'spec').sort(compareByKeys);
+
+				// Ensure specs in indexes property match specs in schema.
+				expect(collectionSpecs).to.deep.equal(schemaSpecs);
 			});
 	}
 
 	it('should remove indexes that are not in the schema when calling removeIndexes', function() {
 		return testScaffold.close()
-			.then(() => testScaffold.connect({ autoCreateIndex: true }))
+			.then(() => testScaffold.connect({ autoCreateIndex: false }))
 			.then(() => {
 				let model1 = createModel('Testings', {
 					foo: { type: String, unique: true },
@@ -342,24 +344,19 @@ describe('MongoModel', function() {
 					foo: { type: String, unique: true },
 					bar: { type: 'geopoint', index: true }
 				}, {
-					autoIndexId: false,
-					initialize: false
+					autoIndexId: false
 				});
 
-				let collection;
-				return model1.collectionPromise
-					.then((model1Collection) => {
-						collection = model1Collection;
-					})
-					.then(() => checkIndexes(collection, model1))
-					.then(() => model2.removeIndexes(collection))
-					.then(() => checkIndexes(collection, model2));
+				return model1.ensureIndexes()
+					.then(() => checkIndexes(model1))
+					.then(() => model2.removeIndexes())
+					.then(() => checkIndexes(model2));
 			});
 	});
 
 	it('should synchronize indexes with schema when calling synchronizeIndexes', function() {
 		return testScaffold.close()
-			.then(() => testScaffold.connect({ autoCreateIndex: true }))
+			.then(() => testScaffold.connect({ autoCreateIndex: false }))
 			.then(() => {
 				let model1 = createModel('Testings', {
 					foo: { type: String, unique: true }
@@ -371,18 +368,13 @@ describe('MongoModel', function() {
 					bar: { type: 'geopoint', index: true },
 					baz: { type: String, index: true }
 				}, {
-					autoIndexId: false,
-					initialize: false
+					autoIndexId: false
 				});
 
-				let collection;
-				return model1.collectionPromise
-					.then((model1Collection) => {
-						collection = model1Collection;
-					})
-					.then(() => checkIndexes(collection, model1))
-					.then(() => model2.synchronizeIndexes(collection))
-					.then(() => checkIndexes(collection, model2));
+				return model1.ensureIndexes()
+					.then(() => checkIndexes(model1))
+					.then(() => model2.synchronizeIndexes())
+					.then(() => checkIndexes(model2));
 			});
 	});
 
