@@ -354,6 +354,27 @@ describe('MongoModel', function() {
 			});
 	});
 
+	it('should be sensitive to order of spec keys when calling removeIndexes', function() {
+		return testScaffold.close()
+			.then(() => testScaffold.connect({ autoCreateIndex: true }))
+			.then(() => {
+				let model = createModel('Testings', {
+					foo: { type: String, unique: true },
+					bar: { type: 'geopoint', index: true }
+				}, {
+					autoIndexId: false
+				});
+
+				model.index({ foo: 1, bar: 1 });
+
+				return checkIndexes(model)
+					.then(() => model.collectionPromise)
+					.then((collection) => collection.createIndex({ bar: 1, foo: 1 }))
+					.then(() => model.removeIndexes())
+					.then(() => checkIndexes(model));
+			});
+	});
+
 	it('should synchronize indexes with schema when calling synchronizeIndexes', function() {
 		return testScaffold.close()
 			.then(() => testScaffold.connect({ autoCreateIndex: false }))
