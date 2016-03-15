@@ -511,6 +511,24 @@ describe('MongoModel', function() {
 			});
 	});
 
+	it('MongoModel#update should serialize mixed when serializeMixed set to true', function() {
+		let model = createModel('Testings', { foo: {
+			type: 'mixed',
+			serializeMixed: true
+		} });
+
+		return model.insert({ foo: { lol: 'bar' } })
+			.then(() => model.update({ foo: '{"lol":"baz"}' }, { foo: { lol: 'baz' } }))
+			.then((numUpdated) => {
+				expect(numUpdated).to.equal(1);
+			})
+			.then(() => model.find({ foo: '{"lol":"baz"}' }))
+			.then((documents) => {
+				expect(documents.length).to.equal(1);
+				expect(documents[0].data.foo.lol).to.equal('baz');
+			});
+	});
+
 	it('MongoModel#upsert should create a document if none match the query', function() {
 		let model = createModel('Testings', { foo: String });
 
