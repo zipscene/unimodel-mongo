@@ -5,7 +5,7 @@ const { expect } = chai;
 const { MongoDocument, createModel } = require('../lib');
 const testScaffold = require('./lib/mongo-scaffold');
 const { map } = require('zs-common-schema');
-const { createQuery } = require('zs-common-query');
+const { createQuery, createUpdate } = require('zs-common-query');
 
 chai.use(require('chai-as-promised'));
 
@@ -508,6 +508,49 @@ describe('MongoModel', function() {
 			.then((documents) => {
 				expect(documents.length).to.equal(1);
 				expect(documents[0].data.foo.lol).to.equal('baz');
+			});
+	});
+
+	it('MongoModel#update should serialize mixed when doing full replacement', function() {
+		let model = createModel('Testings', {
+			foo: {
+				type: 'mixed',
+				serializeMixed: true
+			},
+			bar: Number
+		});
+		let update = createUpdate({ foo: { $lol: 'baz' }, bar: 1 }, { allowFullReplace: true });
+
+		return model.insert({ foo: { $lol: 'bar' }, bar: 1 })
+			.then(() => model.update({ bar: 1 }, update))
+			.then((numUpdated) => {
+				expect(numUpdated).to.equal(1);
+			})
+			.then(() => model.find({ bar: 1 }))
+			.then((documents) => {
+				expect(documents.length).to.equal(1);
+				expect(documents[0].data.foo.$lol).to.equal('baz');
+			});
+	});
+
+	it('MongoModel#update should serialize mixed when updating only the field', function() {
+		let model = createModel('Testings', {
+			foo: {
+				type: 'mixed',
+				serializeMixed: true
+			},
+			bar: Number
+		});
+
+		return model.insert({ foo: { $lol: 'bar' }, bar: 1 })
+			.then(() => model.update({ bar: 1 }, { $set: { foo: { $lol: 'baz' } } }))
+			.then((numUpdated) => {
+				expect(numUpdated).to.equal(1);
+			})
+			.then(() => model.find({ bar: 1 }))
+			.then((documents) => {
+				expect(documents.length).to.equal(1);
+				expect(documents[0].data.foo.$lol).to.equal('baz');
 			});
 	});
 
