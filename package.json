@@ -1,6 +1,6 @@
 {
   "name": "zs-unimodel-mongo",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Unimodel library for accessing mongodb",
   "main": "./dist/lib/index.js",
   "repository": {
