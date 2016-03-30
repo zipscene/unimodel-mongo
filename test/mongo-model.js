@@ -715,6 +715,18 @@ describe('MongoModel', function() {
 			});
 	});
 
+	it('should handle hints in MongoModel#find', function() {
+		let model = createModel('Testings', {
+			foo: { type: Number, index: true },
+			bar: { type: Number, index: true }
+		});
+		return model.insertMulti([ { foo: 1, bar: 1 }, { foo: 2, bar: 2 } ])
+			.then(() => model.find({ foo: 2 }, { hint: { bar: 1 } }))
+			.then((documents) => {
+				expect(documents.length).to.equal(1);
+			});
+	});
+
 	it('should return number of matched records in MongoModel#count', function() {
 		let model = createModel('Testings', { foo: Number });
 
