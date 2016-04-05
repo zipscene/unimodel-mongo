@@ -27,6 +27,7 @@
     "zs-common-query": "^1.9.4",
     "zs-common-schema": "^1.7.6",
     "zs-objtools": "^1.4.0",
+    "zs-simple-profiler": "^1.2.4",
     "zs-unimodel": "^0.6.4",
     "zstreams": "^3.2.1"
   },
