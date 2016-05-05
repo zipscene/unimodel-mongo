@@ -21,7 +21,7 @@
     "inheritz": "^1.2.0",
     "lodash": "^3.10.0",
     "moment": "^2.10.6",
-    "mongodb": "2.0.40",
+    "mongodb": "^2.1.18",
     "pasync": "^1.4.0",
     "xerror": "^1.0.0",
     "zs-common-query": "^1.9.7",
