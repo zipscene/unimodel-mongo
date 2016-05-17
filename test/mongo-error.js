@@ -2,6 +2,7 @@ const chai = require('chai');
 const expect = chai.expect;
 const { MongoError, createModel } = require('../lib');
 const testScaffold = require('./lib/mongo-scaffold');
+const XError = require('xerror');
 
 chai.use(require('chai-as-promised'));
 
@@ -19,15 +20,15 @@ describe('MongoError', function() {
 			.catch((err) => {
 				throw MongoError.fromMongoError(err, model);
 			})
-			.catch((err) => {
+			.then(() => {
+				throw new XError(XError.INTERNAL_ERROR, 'Expected rejection');
+			}, (err) => {
 				expect(err).to.be.an.instanceOf(MongoError);
 				expect(err.data.keys.length).to.equal(1);
 				expect(err.data.keys[0]).to.equal('_id');
-
-				throw err;
 			});
 
-		return expect(promise).to.be.rejectedWith(MongoError);
+		return promise;
 	});
 
 	it('should parse error on duplicated keys', function() {
@@ -42,15 +43,15 @@ describe('MongoError', function() {
 			.catch((err) => {
 				throw MongoError.fromMongoError(err, model);
 			})
-			.catch((err) => {
+			.then(() => {
+				throw new XError(XError.INTERNAL_ERROR, 'Expected rejection');
+			}, (err) => {
 				expect(err).to.be.an.instanceOf(MongoError);
 				expect(err.data.keys.length).to.equal(2);
 				expect(err.data.keys[0]).to.equal('foo');
 				expect(err.data.keys[1]).to.equal('bar');
-
-				throw err;
 			});
 
-		return expect(promise).to.be.rejectedWith(MongoError);
+		return promise;
 	});
 });
