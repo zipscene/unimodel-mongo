@@ -1547,4 +1547,186 @@ describe('MongoModel', function() {
 			}
 		);
 	});
+
+	describe('geoNear conversion', function() {
+
+		it('should work with $near queries', function() {
+			let model = createModel('Testings', { point: { type: 'geopoint', index: true } });
+			return model.collectionPromise
+				.then(() => model.insertMulti([
+					{ point: [ 84, 39 ] },
+					{ point: [ 84.2, 39.2 ] },
+					{ point: [ 20, 88 ] }
+				]))
+				.then(() => model.find({
+					point: {
+						$near: {
+							$geometry: { type: 'Point', coordinates: [ 84.1, 39.1 ] },
+							$maxDistance: 100000
+						}
+					}
+				}))
+				.then((documents) => {
+					expect(documents.length).to.equal(2);
+				});
+		});
+
+		it('should throw with more than one $near', function() {
+			let model = createModel('Testings', { point: { type: 'geopoint', index: true } });
+			return model.collectionPromise
+				.then(() => model.insertMulti([
+					{ point: [ 84, 39 ] },
+					{ point: [ 84.2, 39.2 ] },
+					{ point: [ 20, 88 ] }
+				]))
+				.then(() => model.find({
+					$and: [
+						{
+							point: {
+								$near: {
+									$geometry: { type: 'Point', coordinates: [ 84.1, 39.1 ] }
+								}
+							}
+						}, {
+							point: {
+								$near: {
+									$geometry: { type: 'Point', coordinates: [ 84.1, 39.1 ] }
+								}
+							}
+						}
+					]
+				}))
+				.then(() => {
+					throw new XError(XError.INTERNAL_ERROR, 'Expected rejection');
+				}, (err) => {
+					expect(err.message).to.match(/can only be used once/);
+				});
+		});
+
+		it('should throw without an index', function() {
+			let model = createModel('Testings', { point: { type: 'geopoint' } });
+			return model.collectionPromise
+				.then(() => model.insertMulti([
+					{ point: [ 84, 39 ] },
+					{ point: [ 84.2, 39.2 ] },
+					{ point: [ 20, 88 ] }
+				]))
+				.then(() => model.find({
+					point: {
+						$near: {
+							$geometry: { type: 'Point', coordinates: [ 84.1, 39.1 ] },
+							$maxDistance: 100000
+						}
+					}
+				}))
+				.then(() => {
+					throw new XError(XError.INTERNAL_ERROR, 'Expected rejection');
+				}, (err) => {
+					expect(err.message).to.match(/No suitable index/);
+				});
+		});
+
+		it('should throw if $near is inside $or', function() {
+			let model = createModel('Testings', { point: { type: 'geopoint', index: true } });
+			return model.collectionPromise
+				.then(() => model.insertMulti([
+					{ point: [ 84, 39 ] },
+					{ point: [ 84.2, 39.2 ] },
+					{ point: [ 20, 88 ] }
+				]))
+				.then(() => model.find({
+					$or: [
+						{
+							point: {
+								$near: {
+									$geometry: { type: 'Point', coordinates: [ 84.1, 39.1 ] },
+									$maxDistance: 100000
+								}
+							}
+						},
+						{
+							point: { $exists: false }
+						}
+					]
+				}))
+				.then(() => {
+					throw new XError(XError.INTERNAL_ERROR, 'Expected rejection');
+				}, (err) => {
+					expect(err.message).to.match(/can only be used/);
+				});
+		});
+
+		it('should not throw if $near is inside $and', function() {
+			let model = createModel('Testings', { point: { type: 'geopoint', index: true } });
+			return model.collectionPromise
+				.then(() => model.insertMulti([
+					{ point: [ 84, 39 ] },
+					{ point: [ 84.2, 39.2 ] },
+					{ point: [ 20, 88 ] }
+				]))
+				.then(() => model.find({
+					$and: [
+						{
+							point: {
+								$near: {
+									$geometry: { type: 'Point', coordinates: [ 84.1, 39.1 ] },
+									$maxDistance: 100000
+								}
+							}
+						},
+						{
+							point: { $exists: false }
+						}
+					]
+				}));
+		});
+
+		it('should work with fields', function() {
+			let model = createModel('Testings', { point: { type: 'geopoint', index: true }, foo: Number });
+			return model.collectionPromise
+				.then(() => model.insertMulti([
+					{ point: [ 84, 39 ], foo: 1 },
+					{ point: [ 84.2, 39.2 ], foo: 2 },
+					{ point: [ 20, 88 ], foo: 3 }
+				]))
+				.then(() => model.find({
+					point: {
+						$near: {
+							$geometry: { type: 'Point', coordinates: [ 84.1, 39.1 ] },
+							$maxDistance: 100000
+						}
+					}
+				}, {
+					fields: [ 'foo' ]
+				}))
+				.then((documents) => {
+					expect(documents[0].data.point).to.not.exist;
+					expect(documents[0].data.foo).to.exist;
+				});
+		});
+
+		it('should work with sort', function() {
+			let model = createModel('Testings', { point: { type: 'geopoint', index: true }, foo: Number });
+			return model.collectionPromise
+				.then(() => model.insertMulti([
+					{ point: [ 84, 39 ], foo: 1 },
+					{ point: [ 84.2, 39.2 ], foo: 2 },
+					{ point: [ 84.3, 39.3 ], foo: 3 }
+				]))
+				.then(() => model.find({
+					point: {
+						$near: {
+							$geometry: { type: 'Point', coordinates: [ 84.1, 39.1 ] },
+							$maxDistance: 100000
+						}
+					}
+				}, {
+					sort: [ '-foo' ]
+				}))
+				.then((documents) => {
+					expect(documents[0].data.foo).to.equal(3);
+				});
+		});
+
+	});
 });
