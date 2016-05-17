@@ -2,7 +2,6 @@ const chai = require('chai');
 const XError = require('xerror');
 const { expect } = chai;
 const { MongoDocument, MongoError, createModel } = require('../lib');
-const { Model } = require('zs-unimodel');
 const testScaffold = require('./lib/mongo-scaffold');
 
 chai.use(require('chai-as-promised'));
@@ -11,25 +10,17 @@ describe('MongoDocument', function() {
 	beforeEach(testScaffold.resetAndConnect);
 
 	it('should trigger post-init hooks on init', function() {
-		class TestDocument extends MongoDocument {
-			constructor(model, data) { super(model, data); }
-		}
-
-		class TestModel extends Model {
-			create(data) { return new TestDocument(this, data); }
-		}
-
-		const testModel = new TestModel();
-		const docData = { foo: 'bar' };
-
-		testModel.hook('post-init', function(doc) {
+		this.timeout(100000);
+		let docData = { biz: 'bar' };
+		let model = createModel('testings', { biz: String });
+		model.hook('post-init', function(doc) {
 			expect(doc.getData()).to.deep.equal(docData);
-			expect(this).to.equal(testModel);
+			expect(this).to.equal(model);
 			doc.getData().biz = 'baz';
 		});
-
-		const doc = testModel.create(docData);
+		let doc = model.create(docData);
 		expect(doc.getData().biz).to.equal('baz');
+		return model.collectionPromise;
 	});
 
 	it('should trigger pre-save hooks on init', function() {
