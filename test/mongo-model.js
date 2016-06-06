@@ -936,6 +936,79 @@ describe('MongoModel', function() {
 			});
 	});
 
+	it('should support sum aggregates', function() {
+		let model = createModel('Testings', {
+			foo: String,
+			bar: Number
+		});
+
+		return model.insertMulti([
+			{ foo: 'a', bar: 1 },
+			{ foo: 'b', bar: 2 },
+			{ foo: 'b', bar: 3 },
+			{ foo: 'b', bar: 5 }
+		])
+			.then(() => {
+				return model.aggregate({}, {
+					groupBy: 'foo',
+					stats: {
+						bar: { sum: true }
+					}
+				});
+			})
+			.then((result) => {
+				expect(result).to.deep.equal([
+					{
+						key: [ 'a' ],
+						stats: {
+							bar: { sum: 1 }
+						}
+					}, {
+						key: [ 'b' ],
+						stats: {
+							bar: { sum: 10 }
+						}
+					}
+				]);
+			});
+	});
+
+	it('should support stddev aggregates', function() {
+		let model = createModel('Testings', {
+			foo: String,
+			bar: Number
+		});
+
+		return model.insertMulti([
+			{ foo: 'a', bar: 1 },
+			{ foo: 'b', bar: 2 },
+			{ foo: 'b', bar: 4 }
+		])
+			.then(() => {
+				return model.aggregate({}, {
+					groupBy: 'foo',
+					stats: {
+						bar: { stddev: true }
+					}
+				});
+			})
+			.then((result) => {
+				expect(result).to.deep.equal([
+					{
+						key: [ 'a' ],
+						stats: {
+							bar: { stddev: 0 }
+						}
+					}, {
+						key: [ 'b' ],
+						stats: {
+							bar: { stddev: 1 }
+						}
+					}
+				]);
+			});
+	});
+
 	it('should run aggregates with ranges', function() {
 		let model = createModel('Testings', {
 			foo: Number,
