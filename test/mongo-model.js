@@ -701,6 +701,7 @@ describe('MongoModel', function() {
 			.then((documents) => {
 				expect(documents[0].options.isPartial).to.be.true;
 				expect(documents[0].data).to.deep.equal({ bar: 2 });
+				expect(documents[0].fields).to.deep.equal([ 'bar' ]);
 			});
 	});
 
