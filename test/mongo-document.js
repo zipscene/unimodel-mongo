@@ -67,20 +67,6 @@ describe('MongoDocument', function() {
 			});
 	});
 
-	it('should serialize mixed when saving a new document and serializeMixed set to true', function() {
-		let model = createModel('test', { foo: {
-			type: 'mixed',
-			serializeMixed: true
-		} });
-		let document = new MongoDocument(model, { foo: { $bar: 'baz' } });
-
-		return document.save()
-			.then((document) => {
-				// console.log(document.data);
-				expect(document.data).to.deep.equal({ foo: '{"$bar":"baz"}' });
-			});
-	});
-
 	it('should save changes to an existing document', function() {
 		let model = createModel('testings', { foo: String });
 		let document = new MongoDocument(model, { foo: 'bar' });
@@ -95,7 +81,7 @@ describe('MongoDocument', function() {
 			});
 	});
 
-	it('should serialize and save changes to an existing document', function() {
+	it('serialization should be invisible to user', function() {
 		let model = createModel('test', { foo: {
 			type: 'mixed',
 			serializeMixed: true
@@ -109,7 +95,7 @@ describe('MongoDocument', function() {
 			})
 			.then((document) => {
 				// console.log(document.data);
-				expect(document.data).to.deep.equal({ foo: '{"$bar":"lol"}' });
+				expect(document.data).to.deep.equal({ foo: { $bar: 'lol' } });
 			});
 
 	});
