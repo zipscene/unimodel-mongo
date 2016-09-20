@@ -1004,6 +1004,16 @@ describe('MongoModel', function() {
 			});
 	});
 
+	it('should convert from BSON type Bool to String', function() {
+		let model = createModel('Testings', { foo: Boolean });
+		return model.insertMulti([ { foo: true }, { foo: true }, { foo: false } ])
+			.then(() => model.aggregate({}, { groupBy: 'foo', total: true }))
+			.then((result) => {
+				let expected = [ { key: [ 'false' ], total: 1 }, { key: [ 'true' ], total: 2 } ];
+				expect(result).to.deep.equal(expected);
+			});
+	});
+
 	it('should support sum aggregates', function() {
 		let model = createModel('Testings', {
 			foo: String,
