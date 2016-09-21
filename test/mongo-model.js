@@ -1004,6 +1004,26 @@ describe('MongoModel', function() {
 			});
 	});
 
+	it('should support grouping by boolean fields', function() {
+		let model = createModel('Testings', { foo: { bar: Boolean } });
+		return model.insertMulti([ { foo: { bar: true } }, { foo: { bar: true } }, { foo: { bar: false } } ])
+			.then(() => model.aggregate({}, { groupBy: 'foo.bar', total: true }))
+			.then((result) => {
+				let expected = [ { key: [ false ], total: 1 }, { key: [ true ], total: 2 } ];
+				expect(result).to.deep.equal(expected);
+			});
+	});
+
+	it('should support grouping by numeric fields', function() {
+		let model = createModel('Testings', { foo: { bar: Number } });
+		return model.insertMulti([ { foo: { bar: 0 } }, { foo: { bar: 1 } }, { foo: { bar: 1 } } ])
+			.then(() => model.aggregate({}, { groupBy: 'foo.bar', total: true }))
+			.then((result) => {
+				let expected = [ { key: [ 0 ], total: 1 }, { key: [ 1 ], total: 2 } ];
+				expect(result).to.deep.equal(expected);
+			});
+	});
+
 	it('should support sum aggregates', function() {
 		let model = createModel('Testings', {
 			foo: String,
