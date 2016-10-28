@@ -28,7 +28,7 @@
     "zs-common-query": "^1.10.0",
     "zs-common-schema": "^1.8.0",
     "zs-objtools": "^1.6.2",
-    "zs-polytoken": "0.0.3",
+    "zs-polytoken": "^0.0.4",
     "zs-simple-profiler": "^1.2.7",
     "zs-unimodel": "^0.6.14",
     "zstreams": "^3.2.1"
