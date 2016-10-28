@@ -1890,4 +1890,149 @@ describe('MongoModel', function() {
 		});
 
 	});
+
+
+	describe('geoHashed indexes', function() {
+
+		let model;
+		beforeEach(function() {
+			let stepConfig = { base: 0.01, multiplier: 5, stepNum: 4 };
+			model = createModel('Testings', {
+				brandId: { type: 'string' },
+				point: {
+					type: 'geopoint',
+					index: {
+						indexType: 'geoHashed',
+						step: stepConfig
+					}
+				},
+				multiPoint: {
+					type: 'geopoint',
+					index: {
+						indexType: 'geoHashed',
+						step: stepConfig
+					}
+				}
+			});
+			model.index({ brandId: 1, point: { indexType: 'geoHashed', step: stepConfig } });
+		});
+
+		it('should work with $near queries', function() {
+			return model.collectionPromise
+				.then(() => model.insertMulti([
+					{ point: [ 84, 39 ] },
+					{ point: [ 84.2, 39.2 ] },
+					{ point: [ 20, 88 ] }
+				]))
+				.then(() => model.find({
+					point: {
+						$near: {
+							$geometry: { type: 'Point', coordinates: [ 84.1, 39.1 ] },
+							$maxDistance: 100000
+						}
+					}
+				}))
+				.then((documents) => {
+					expect(documents.length).to.equal(2);
+				});
+		});
+
+		it('should throw if $near is inside $or', function() {
+			return model.collectionPromise
+				.then(() => model.insertMulti([
+					{ point: [ 84, 39 ] },
+					{ point: [ 84.2, 39.2 ] },
+					{ point: [ 20, 88 ] }
+				]))
+				.then(() => model.find({
+					$or: [
+						{
+							point: {
+								$near: {
+									$geometry: { type: 'Point', coordinates: [ 84.1, 39.1 ] },
+									$maxDistance: 100000
+								}
+							}
+						},
+						{
+							point: { $exists: false }
+						}
+					]
+				}))
+				.then(() => {
+					throw new XError(XError.INTERNAL_ERROR, 'Expected rejection');
+				}, (err) => {
+					expect(err.message).to.match(/can only be used/);
+				});
+		});
+
+		it('should work with fields', function() {
+			return model.collectionPromise
+				.then(() => model.insertMulti([
+					{ point: [ 84, 39 ], brandId: 'billy-bobs-burger-bayou' },
+					{ point: [ 84.2, 39.2 ], brandId: 'billy-bobs-burger-bayou' },
+					{ point: [ 20, 88 ], brandId: 'billy-bobs-burger-bayou' }
+				]))
+				.then(() => model.find({
+					point: {
+						$near: {
+							$geometry: { type: 'Point', coordinates: [ 84.1, 39.1 ] },
+							$maxDistance: 100000
+						}
+					}
+				}, {
+					fields: [ 'brandId' ]
+				}))
+				.then((documents) => {
+					expect(documents.length).to.equal(2);
+					expect(documents[0].data.point).to.not.exist;
+					expect(documents[0].data.brandId).to.exist;
+				});
+		});
+
+		it('should work with sort', function() {
+			return model.collectionPromise
+				.then(() => model.insertMulti([
+					{ point: [ 84, 39 ], brandId: 'billy-bobs-burger-bayou' },
+					{ point: [ 84.2, 39.2 ], brandId: 'billy-bobs-bacon-bayou' },
+					{ point: [ 84.3, 39.3 ], brandId: 'billy-bobs-biscuit-bayou' }
+				]))
+				.then(() => model.find({
+					point: {
+						$near: {
+							$geometry: { type: 'Point', coordinates: [ 84.1, 39.1 ] },
+							$maxDistance: 100000
+						}
+					}
+				}, {
+					sort: [ 'brandId' ]
+				}))
+				.then((documents) => {
+					expect(documents[0].data.brandId).to.equal('billy-bobs-bacon-bayou');
+				});
+		});
+
+		it('should automatically sort by distance', function() {
+			return model.collectionPromise
+				.then(() => {
+					return model.insertMulti([
+						{ point: [ 84, 39 ], brandId: 'billy-bobs-burger-bayou' },
+						{ point: [ 84.11, 39.11 ], brandId: 'billy-bobs-bacon-bayou' },
+						{ point: [ 84.3, 39.3 ], brandId: 'billy-bobs-biscuit-bayou' }
+					]);
+				}).then(() => {
+					return model.find({
+						point: {
+							$near: {
+								$geometry: { type: 'Point', coordinates: [ 84.1, 39.1 ] },
+								$maxDistance: 100000
+							}
+						}
+					});
+				}).then((documents) => {
+					expect(documents[0].data.brandId).to.equal('billy-bobs-bacon-bayou');
+				});
+		});
+
+	});
 });
