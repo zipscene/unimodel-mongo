@@ -843,6 +843,41 @@ describe('MongoModel', function() {
 			});
 	});
 
+	it('should obey the \'only\' aggregate modifier', function() {
+		let model = createModel('Testings', {
+			foo: [ String ],
+			buz: Number
+		});
+		return model.insertMulti([
+			{ foo: [ 'a' ], buz: 1 },
+			{ foo: [ 'b' ], buz: 1 },
+			{ foo: [ 'c' ], buz: 1 },
+			{ foo: [ 'a', 'b', 'c' ], buz: 1 }
+		])
+			.then(() => {
+				return model.aggregate({}, {
+					groupBy: [ {
+						field: 'foo',
+						only: [ 'a', 'c' ]
+					} ],
+					stats: {
+						buz: {
+							sum: 1
+						}
+					},
+					total: true
+				});
+			})
+			.then((result) => {
+				expect(result).to.be.an('array');
+				expect(result).to.have.length(2);
+				expect(result).to.deep.equal([
+					{ stats: { buz: { sum: 2 } }, total: 2, key: [ 'a' ] },
+					{ stats: { buz: { sum: 2 } }, total: 2, key: [ 'c' ] }
+				]);
+			});
+	});
+
 	it('should run grouped aggregates on nested fields', function() {
 		let model = createModel('Testings', {
 			biz: { buz: String },
