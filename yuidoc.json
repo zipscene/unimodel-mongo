@@ -1,5 +1,5 @@
 {
-	"name": "zs-unimodel-mongo",
+	"name": "unimodel-mongo",
 	"description": "Unimodel library for accessing mongodb",
 	"options": {
 		"outdir": "./docs",

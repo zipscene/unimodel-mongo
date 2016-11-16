@@ -1,11 +1,15 @@
+// Copyright 2016 Zipscene, LLC
+// Licensed under the Apache License, Version 2.0
+// http://www.apache.org/licenses/LICENSE-2.0
+
 const _ = require('lodash');
 const chai = require('chai');
 const XError = require('xerror');
 const { expect } = chai;
 const { MongoDocument, createModel } = require('../lib');
 const testScaffold = require('./lib/mongo-scaffold');
-const { map } = require('zs-common-schema');
-const { createQuery, createUpdate } = require('zs-common-query');
+const { map } = require('common-schema');
+const { createQuery, createUpdate } = require('common-query');
 
 chai.use(require('chai-as-promised'));
 

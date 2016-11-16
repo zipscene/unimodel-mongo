@@ -1,12 +1,16 @@
 {
-  "name": "zs-unimodel-mongo",
+  "name": "unimodel-mongo",
   "version": "1.2.2",
-  "description": "Unimodel library for accessing mongodb",
+  "description": "Universal model framework, mongodb module",
   "main": "./dist/lib/index.js",
   "repository": {
     "type": "git",
-    "url": "git@git.zipscene.com:zsapilibs/zs-unimodel-mongo.git"
+    "url": "https://github.com/zipscene/unimodel-mongo.git"
   },
+  "keywords": [
+    "unimodel",
+    "mongo"
+  ],
   "scripts": {
     "lint": "node ./node_modules/.bin/eslint . || exit 0",
     "docs": "node ./node_modules/.bin/yuidoc .",
@@ -25,13 +29,13 @@
     "mongodb": "^2.1.18",
     "pasync": "^1.4.0",
     "xerror": "^1.0.0",
-    "zs-common-query": "^1.10.3",
-    "zs-common-schema": "^1.8.0",
-    "zs-objtools": "^1.6.2",
-    "zs-polytoken": "^0.0.5",
-    "zs-simple-profiler": "^1.2.7",
-    "zs-unimodel": "^0.6.14",
-    "zstreams": "^3.2.1"
+    "zstreams": "^3.2.1",
+    "common-query": "^1.10.3",
+    "common-schema": "^1.8.0",
+    "objtools": "^1.6.2",
+    "polytoken": "^0.0.5",
+    "simprof": "^1.2.7",
+    "unimodel-core": "^0.6.14"
   },
   "devDependencies": {
     "broccoli": "^0.16.4",
@@ -48,7 +52,5 @@
     "source-map-support": "^0.3.2",
     "yuidocjs": "^0.8.0"
   },
-  "publishConfig": {
-    "registry": "https://npm.zipscene.com/"
-  }
+  "license": "Apache-2.0"
 }

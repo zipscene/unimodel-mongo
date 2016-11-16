@@ -1,10 +1,14 @@
+// Copyright 2016 Zipscene, LLC
+// Licensed under the Apache License, Version 2.0
+// http://www.apache.org/licenses/LICENSE-2.0
+
 const { expect } = require('chai');
 const { createModel, MongoModel, MongoError } = require('../lib');
 const testScaffold = require('./lib/mongo-scaffold');
-const { map } = require('zs-common-schema');
+const { map } = require('common-schema');
 const bson = require('bson');
 const BSON = new bson.BSONPure.BSON();
-const objtools = require('zs-objtools');
+const objtools = require('objtools');
 
 const hash = MongoModel.createMapIndexHash;
 

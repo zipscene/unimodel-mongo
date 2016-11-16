@@ -1,11 +1,11 @@
-# zs-unimodel-mongo
+# unimodel-mongo
 
 Unimodel library for MongoDB.
 
 ## Installation
 
 ```shell
-$ npm install --save zs-unimodel-mongo
+$ npm install --save unimodel-mongo
 ```
 
 ## Basic Usage
@@ -14,7 +14,7 @@ In this section, we will walk through basic usage for the library.
 
 Initiate the default connection to mongo:
 ```js
-let mongo = require('zs-unimodel-mongo');
+let mongo = require('unimodel-mongo');
 mongo.connect('mongodb://localhost/mongotest');
 ```
 
@@ -114,14 +114,14 @@ Animal.index({ 'siblingAges.age': 1, 'beds.averageSleepTime': 1 });
 #### Create Index in Background mode
 To create index in background mode, pass an option of `backgroundIndex` set to true to `connect()` method, like this:
 ```
-let mongo = require('zs-unimodel-mongo');
+let mongo = require('unimodel-mongo');
 mongo.connect({ backgroundIndex: true });
 ```
 
 #### Automatically create indexes
-By default, zs-unimodel-mongo creates indexes automatically when setting up database. To disable this behavior, do:
+By default, unimodel-mongo creates indexes automatically when setting up database. To disable this behavior, do:
 ```
-let mongo = require('zs-unimodel-mongo');
+let mongo = require('unimodel-mongo');
 mongo.connect({ autoCreateIndex: false });
 ```
 
