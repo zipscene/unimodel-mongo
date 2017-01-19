@@ -85,6 +85,31 @@ describe('MongoDocument', function() {
 			});
 	});
 
+	it('should save changes that are reverted later with the same instance', function() {
+		let model = createModel('testings', { foo: String });
+
+		return Promise.resolve()
+			.then(() => {
+				let document = new MongoDocument(model, { foo: 'bar' });
+				return document.save();
+			})
+			.then(() => {
+				return model.findOne({});
+			})
+			.then((document) => {
+				document.data.foo = 'baz';
+				return document.save();
+			})
+			.then((document) => {
+				document.data.foo = 'bar';
+				return document.save();
+			})
+			.then(() => model.findOne({}))
+			.then((newDocument) => {
+				expect(newDocument.data).to.deep.equal({ foo: 'bar' });
+			});
+	});
+
 	it('serialization should be invisible to user', function() {
 		let model = createModel('test', { foo: {
 			type: 'mixed',
