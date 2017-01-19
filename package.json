@@ -1,6 +1,6 @@
 {
   "name": "unimodel-mongo",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Universal model framework, mongodb module",
   "main": "./dist/lib/index.js",
   "repository": {
