@@ -2073,6 +2073,28 @@ describe('MongoModel', function() {
 				});
 		});
 
+		it('should work with update() and upsert option', function() {
+			return model.collectionPromise
+				.then(() => {
+					return model.update(
+						{ brandId: 'billy-bobs-burger-bayou' },
+						{ $set: { point: [ 84.11, 39.11 ], brandId: 'billy-bobs-burger-bayou' } },
+						{ upsert: true }
+					);
+				}).then(() => {
+					return model.find({
+						point: {
+							$near: {
+								$geometry: { type: 'Point', coordinates: [ 84.1, 39.1 ] },
+								$maxDistance: 100000
+							}
+						}
+					});
+				}).then((documents) => {
+					expect(documents[0].data.brandId).to.equal('billy-bobs-burger-bayou');
+				});
+		});
+
 		// For the same reasons as the other timout tests above, this test is
 		// marked as skipped
 		it.skip('should work with timeout', function() {
