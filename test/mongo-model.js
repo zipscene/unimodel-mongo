@@ -2095,5 +2095,41 @@ describe('MongoModel', function() {
 				});
 		});
 
+		// For the same reasons as the other timout tests above, this test is
+		// marked as skipped
+		it.skip('should work with timeout', function() {
+			let records = [];
+			for (let r = 0; r < 10000; r++) {
+				records.push({
+					point: [ 84.1, 39.1 ],
+					brandId: `brand-${r}`
+				});
+			}
+
+			return model.collectionPromise
+				.then(() => model.insertMulti(records))
+				.then(() => model.find(
+					{
+						point: {
+							$near: {
+								$geometry: { type: 'Point', coordinates: [ 84.1, 39.1 ] },
+								$maxDistance: 100000
+							}
+						}
+					},
+					{ timeout: 0.001 }
+				))
+				.then(
+					() => {
+						throw new Error('find should have failed');
+					},
+					(ex) => {
+						expect(ex).to.be.an.instanceof(XError);
+						expect(ex.code).to.equal(XError.TIMED_OUT);
+						expect(ex.cause).to.be.an.instanceof(Error);
+					}
+				);
+		});
+
 	});
 });
