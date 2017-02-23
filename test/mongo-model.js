@@ -257,14 +257,12 @@ describe('MongoModel', function() {
 		let model = createModel('Testings', {
 			foo: { type: String, unique: true },
 			bar: { type: 'geopoint', index: true }
-		}, {
-			autoIndexId: false
 		});
 
 		return model.collectionPromise
 			.then((collection) => collection.indexes())
 			.then((indexes) => {
-				expect(indexes.length).to.equal(2);
+				expect(indexes.length).to.equal(3);
 			});
 	});
 
@@ -275,14 +273,12 @@ describe('MongoModel', function() {
 				let model = createModel('Testings', {
 					foo: { type: String, unique: true },
 					bar: { type: 'geopoint', index: true }
-				}, {
-					autoIndexId: false
 				});
 
 				return model.collectionPromise
 					.then((collection) => collection.indexes())
 					.then((indexes) => {
-						expect(indexes.length).to.equal(0);
+						expect(indexes.length).to.equal(1);
 					});
 			});
 	});
@@ -295,13 +291,12 @@ describe('MongoModel', function() {
 					foo: { type: String, unique: true },
 					bar: { type: 'geopoint', index: true }
 				}, {
-					autoIndexId: false,
 					autoCreateIndex: false
 				});
 
 				return model.ensureIndexes()
 					.then(() => {
-						expect(model.indexes).to.have.length(2);
+						expect(model.indexes).to.have.length(3);
 					});
 			});
 	});
@@ -328,6 +323,9 @@ describe('MongoModel', function() {
 				let collectionSpecs = _.pluck(model.indexes, 'key').sort(compareByKeys);
 				let schemaSpecs = _.pluck(model.getIndexes(), 'spec').sort(compareByKeys);
 
+				// Mongo mandates the `_id` index as of 3.4.
+				schemaSpecs.unshift({ _id: 1 });
+
 				// Ensure specs in indexes property match specs in schema.
 				expect(collectionSpecs).to.deep.equal(schemaSpecs);
 			});
@@ -341,15 +339,11 @@ describe('MongoModel', function() {
 					foo: { type: String, unique: true },
 					bar: { type: 'geopoint', index: true },
 					baz: { type: String, index: true }
-				}, {
-					autoIndexId: false
 				});
 
 				let model2 = createModel('Testings', {
 					foo: { type: String, unique: true },
 					bar: { type: 'geopoint', index: true }
-				}, {
-					autoIndexId: false
 				});
 
 				return model1.ensureIndexes()
@@ -366,8 +360,6 @@ describe('MongoModel', function() {
 				let model = createModel('Testings', {
 					foo: { type: String, unique: true },
 					bar: { type: 'geopoint', index: true }
-				}, {
-					autoIndexId: false
 				});
 
 				model.index({ foo: 1, bar: 1 });
@@ -386,15 +378,11 @@ describe('MongoModel', function() {
 			.then(() => {
 				let model1 = createModel('Testings', {
 					foo: { type: String, unique: true }
-				}, {
-					autoIndexId: false
 				});
 
 				let model2 = createModel('Testings', {
 					bar: { type: 'geopoint', index: true },
 					baz: { type: String, index: true }
-				}, {
-					autoIndexId: false
 				});
 
 				return model1.ensureIndexes()
@@ -415,7 +403,6 @@ describe('MongoModel', function() {
 					foo: { type: String, unique: true },
 					bar: { type: 'geopoint', index: true }
 				}, {
-					autoIndexId: false,
 					backgroundIndex: true
 				});
 
@@ -423,8 +410,9 @@ describe('MongoModel', function() {
 
 				return model.collectionPromise
 					.then(() => {
-						expect(model.indexes).to.have.length(3);
+						expect(model.indexes).to.have.length(4);
 						for (let index of model.indexes) {
+							if (index.name === '_id_') continue;
 							expect(index).to.have.property('background', true);
 						}
 					});
@@ -436,8 +424,6 @@ describe('MongoModel', function() {
 			return createModel('Testings', {
 				foo: { type: String, unique: true },
 				bar: { type: 'geopoint', index: true }
-			}, {
-				autoIndexId: false
 			});
 		}
 
@@ -448,7 +434,7 @@ describe('MongoModel', function() {
 			.then(() => model2.collectionPromise)
 			.then((collection) => collection.indexes())
 			.then((indexes) => {
-				expect(indexes.length).to.equal(2);
+				expect(indexes.length).to.equal(3);
 			});
 	});
 
@@ -705,7 +691,7 @@ describe('MongoModel', function() {
 			.then((documents) => {
 				expect(documents[0].options.isPartial).to.be.true;
 				expect(documents[0].data).to.deep.equal({ bar: 2 });
-				expect(documents[0].fields).to.deep.equal([ 'bar' ]);
+				expect(documents[0].fields).to.deep.equal([ 'bar', '__rev' ]);
 			});
 	});
 
