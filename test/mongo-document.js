@@ -310,7 +310,7 @@ describe('MongoDocument', function() {
 				return document3.save();
 			})
 			.then((document3) => {
-				expect(document3._revisionNumber).to.equal(3);
+				expect(document3._revisionNumber).to.equal(2);
 			});
 	});
 
