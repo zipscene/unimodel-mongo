@@ -2,13 +2,27 @@
 // Licensed under the Apache License, Version 2.0
 // http://www.apache.org/licenses/LICENSE-2.0
 
-const expect = require('chai').expect;
-const MongoDb = require('../lib').MongoDb;
-const MongoError = require('../lib').MongoError;
+const { MongoDb, MongoError } = require('../lib');
+const chai = require('chai');
+const sinon = require('sinon');
+const sinonChai = require('sinon-chai');
+const { expect } = chai;
 const pasync = require('pasync');
 const testScaffold = require('./lib/mongo-scaffold');
+const opUtils = require('../lib/utils/ops');
+chai.use(sinonChai);
 
 describe('MongoDb', function() {
+	let sandbox;
+
+	beforeEach(function() {
+		sandbox = sinon.sandbox.create();
+	});
+
+	afterEach(function() {
+		sandbox.restore();
+	});
+
 	it('should connect to mongo', function(done) {
 		let testdb = new MongoDb();
 		testdb.connect(testScaffold.config.uri)
@@ -31,5 +45,133 @@ describe('MongoDb', function() {
 			done();
 		});
 		testdb.connect(testScaffold.config.nonexistantUri);
+	});
+
+	describe('#killOpsWithComment', function() {
+		it('gets opIds with matching commments and kills them', function() {
+			let testdb = new MongoDb();
+			let comment = 'some comment';
+			let opIds = [ 12345, 67890 ];
+			let opsKilled = false;
+			sinon.stub(testdb, '_getOpIdsWithComment').resolves(opIds);
+			sinon.stub(testdb, '_killOps').callsFake(function() {
+				return new Promise((resolve) => {
+					setImmediate(() => {
+						opsKilled = true;
+						resolve();
+					});
+				});
+			});
+
+			return testdb.killOpsWithComment(comment)
+				.then(() => {
+					expect(testdb._getOpIdsWithComment).to.be.calledOnce;
+					expect(testdb._getOpIdsWithComment).to.be.calledOn(testdb);
+					expect(testdb._getOpIdsWithComment).to.be.calledWith(comment);
+					expect(testdb._killOps).to.be.calledOnce;
+					expect(testdb._killOps).to.be.calledOn(testdb);
+					expect(testdb._killOps).to.be.calledWith(opIds);
+					expect(opsKilled).to.be.true;
+				});
+		});
+	});
+
+	describe('#_getOpIdsWithComment', function() {
+		it('resolves with result of currentOp command on admin db', function() {
+			let testdb = new MongoDb();
+			return testdb.connect(testScaffold.config.uri)
+				.then(() => {
+					let comment = 'some comment';
+					let admindb = testdb.db.admin();
+					let currentOpDoc = { foo: 'bar' };
+					let opIds = [ 'foo', 'bar' ];
+					sinon.stub(testdb.db, 'admin').returns(admindb);
+					sinon.stub(admindb, 'command').resolves(currentOpDoc);
+					sandbox.stub(opUtils, 'getOpIdsWithComment').returns(opIds);
+
+					return testdb._getOpIdsWithComment(comment)
+						.then((result) => {
+							expect(testdb.db.admin).to.be.calledOnce;
+							expect(testdb.db.admin).to.be.calledOn(testdb.db);
+							expect(admindb.command).to.be.calledOnce;
+							expect(admindb.command).to.be.calledOn(admindb);
+							expect(admindb.command).to.be.calledWith({
+								currentOp: 1
+							});
+							expect(opUtils.getOpIdsWithComment).to.be.calledOnce;
+							expect(opUtils.getOpIdsWithComment).to.be.calledOn(opUtils);
+							expect(opUtils.getOpIdsWithComment).to.be.calledWith(
+								currentOpDoc,
+								comment
+							);
+							expect(result).to.equal(opIds);
+						});
+				});
+		});
+	});
+
+	describe('#_killOps', function() {
+		let testdb, opIds, eachComplete, admindb;
+
+		beforeEach(function() {
+			testdb = new MongoDb();
+			opIds = [ 12345, 67890 ];
+			eachComplete = false;
+
+			sandbox.stub(pasync, 'each').callsFake(function() {
+				return new Promise((resolve) => {
+					setImmediate(() => {
+						eachComplete = true;
+						resolve();
+					});
+				});
+			});
+
+			return testdb.connect(testScaffold.config.uri)
+				.then(() => {
+					admindb = testdb.db.admin();
+					sinon.stub(testdb.db, 'admin').returns(admindb);
+				});
+		});
+
+		it('resolves after pasyn::each on provided op ids', function() {
+			return testdb._killOps(opIds)
+				.then(() => {
+					expect(pasync.each).to.be.calledOnce;
+					expect(pasync.each).to.be.calledOn(pasync);
+					expect(pasync.each).to.be.calledWith(opIds, sinon.match.func);
+					expect(eachComplete).to.be.true;
+				});
+		});
+
+		describe('pasync::each iteratee', function() {
+			let iteratee;
+
+			beforeEach(function() {
+				return testdb._killOps(opIds)
+					.then(() => {
+						iteratee = pasync.each.firstCall.args[1];
+					});
+			});
+
+			it('kills op with provided opId using admin db', function() {
+				let opId = 12345;
+				let killOpResult = { foo: 'bar' };
+				sinon.stub(admindb, 'command').resolves(killOpResult);
+
+				return iteratee(opId)
+					.then((result) => {
+						expect(testdb.db.admin).to.be.calledOnce;
+						expect(testdb.db.admin).to.be.calledOn(testdb.db);
+						expect(admindb.command).to.be.calledOnce;
+						expect(admindb.command).to.be.calledOn(admindb);
+						expect(admindb.command).to.be.calledWith({
+							killOp: 1,
+							op: opId
+						});
+						expect(result).to.equal(killOpResult);
+					});
+			});
+		});
 	});
 });
