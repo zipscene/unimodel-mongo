@@ -1,4 +1,4 @@
-const ops = require('../lib/utils/ops');
+const opUtils = require('../lib/utils/ops');
 const chai = require('chai');
 const sinon = require('sinon');
 const sinonChai = require('sinon-chai');
@@ -17,6 +17,26 @@ describe('utils/ops', function() {
 		sandbox.restore();
 	});
 
+	describe('::addComment', function() {
+		it('returns copy of query with comment added as first key', function() {
+			let query = { foo: 'bar' };
+			let comment = 'some comment';
+
+			let result = opUtils.addComment(query, comment);
+
+			expect(result).to.deep.equal({ $comment: comment, foo: 'bar' });
+			expect(Object.keys(result)).to.deep.equal([ '$comment', 'foo' ]);
+		});
+
+		it('returns unchanged query if comment is undefined', function() {
+			let query = { foo: 'bar' };
+
+			let result = opUtils.addComment(query, undefined);
+
+			expect(result).to.equal(query);
+		});
+	});
+
 	describe('::getQuery', function() {
 		it('returns query from provided op', function() {
 			let op = { query: {
@@ -24,7 +44,7 @@ describe('utils/ops', function() {
 				filter: { $comment: 'some comment' }
 			} };
 
-			expect(ops.getQuery(op)).to.equal(op.query);
+			expect(opUtils.getQuery(op)).to.equal(op.query);
 		});
 
 		it('returns originatingCommand for getMore ops', function() {
@@ -40,7 +60,7 @@ describe('utils/ops', function() {
 				}
 			};
 
-			expect(ops.getQuery(op)).to.equal(op.originatingCommand);
+			expect(opUtils.getQuery(op)).to.equal(op.originatingCommand);
 		});
 	});
 
@@ -48,7 +68,7 @@ describe('utils/ops', function() {
 		const comment = 'some comment';
 
 		function expectGetPath(query, path) {
-			let result = ops.getCommentFromQuery(query);
+			let result = opUtils.getCommentFromQuery(query);
 
 			expect(objtools.getPath).to.be.calledOnce;
 			expect(objtools.getPath).to.be.calledOn(objtools);
@@ -77,13 +97,13 @@ describe('utils/ops', function() {
 		});
 
 		it('returns null for all other queries', function() {
-			expect(ops.getCommentFromQuery({ other: 'foo' })).to.be.null;
+			expect(opUtils.getCommentFromQuery({ other: 'foo' })).to.be.null;
 		});
 
 		it('returns null if nothing is found at path', function() {
 			objtools.getPath.returns(undefined);
 
-			expect(ops.getCommentFromQuery({ find: 'foo' })).to.be.null;
+			expect(opUtils.getCommentFromQuery({ find: 'foo' })).to.be.null;
 		});
 	});
 
@@ -93,20 +113,20 @@ describe('utils/ops', function() {
 			let query;
 
 			beforeEach(function() {
-				sandbox.stub(ops, 'getCommentFromQuery').returns(comment);
+				sandbox.stub(opUtils, 'getCommentFromQuery').returns(comment);
 			});
 
 			it('returns true if comment from query equals provided commment', function() {
-				let result = ops.queryHasComment(query, comment);
+				let result = opUtils.queryHasComment(query, comment);
 
-				expect(ops.getCommentFromQuery).to.be.calledOnce;
-				expect(ops.getCommentFromQuery).to.be.calledOn(ops);
-				expect(ops.getCommentFromQuery).to.be.calledWith(query);
+				expect(opUtils.getCommentFromQuery).to.be.calledOnce;
+				expect(opUtils.getCommentFromQuery).to.be.calledOn(opUtils);
+				expect(opUtils.getCommentFromQuery).to.be.calledWith(query);
 				expect(result).to.be.true;
 			});
 
 			it('returns false otherwise', function() {
-				expect(ops.queryHasComment(query, 'other commment')).to.be.false;
+				expect(opUtils.queryHasComment(query, 'other commment')).to.be.false;
 			});
 		});
 
@@ -116,8 +136,8 @@ describe('utils/ops', function() {
 				let otherComment = 'other comment';
 				let query = `{ find: "foo", filter: { $comment: "${comment}", "${otherComment}"...`;
 
-				expect(ops.queryHasComment(query, comment)).to.be.true;
-				expect(ops.queryHasComment(query, otherComment)).to.be.false;
+				expect(opUtils.queryHasComment(query, comment)).to.be.true;
+				expect(opUtils.queryHasComment(query, otherComment)).to.be.false;
 			});
 
 			it('tolerates whitespace differences', function() {
@@ -125,8 +145,8 @@ describe('utils/ops', function() {
 				let query = `$comment:"${comment}"`;
 				let otherQuery = `$comment:  "${comment}"`;
 
-				expect(ops.queryHasComment(query, comment)).to.be.true;
-				expect(ops.queryHasComment(otherQuery, comment)).to.be.true;
+				expect(opUtils.queryHasComment(query, comment)).to.be.true;
+				expect(opUtils.queryHasComment(otherQuery, comment)).to.be.true;
 			});
 
 			it('tolerates both escaped and unescaped double quotes in comment', function() {
@@ -135,9 +155,9 @@ describe('utils/ops', function() {
 				let otherQuery = `$comment: "\\"some\\"comment\\""`;
 				let anotherQuery = `$comment: \\"${comment}\\"`;
 
-				expect(ops.queryHasComment(query, comment)).to.be.true;
-				expect(ops.queryHasComment(otherQuery, comment)).to.be.true;
-				expect(ops.queryHasComment(anotherQuery, comment)).to.be.false;
+				expect(opUtils.queryHasComment(query, comment)).to.be.true;
+				expect(opUtils.queryHasComment(otherQuery, comment)).to.be.true;
+				expect(opUtils.queryHasComment(anotherQuery, comment)).to.be.false;
 			});
 
 			it('tolerates regexp special characters in comment', function() {
@@ -145,8 +165,8 @@ describe('utils/ops', function() {
 				let query = `$comment: "${comment}"`;
 				let otherQuery = `$comment: "otherComment"`;
 
-				expect(ops.queryHasComment(query, comment)).to.be.true;
-				expect(ops.queryHasComment(otherQuery, comment)).to.be.false;
+				expect(opUtils.queryHasComment(query, comment)).to.be.true;
+				expect(opUtils.queryHasComment(otherQuery, comment)).to.be.false;
 			});
 		});
 	});
@@ -157,18 +177,18 @@ describe('utils/ops', function() {
 			let op = { op: 'find' };
 			let comment = 'some comment';
 			let query = { find: 'foo' };
-			sandbox.stub(ops, 'getQuery').returns(query);
-			sandbox.stub(ops, 'queryHasComment').returns('has comment result');
+			sandbox.stub(opUtils, 'getQuery').returns(query);
+			sandbox.stub(opUtils, 'queryHasComment').returns('has comment result');
 
-			let result = ops.hasComment(op, comment);
+			let result = opUtils.hasComment(op, comment);
 
-			expect(ops.getQuery).to.be.calledOnce;
-			expect(ops.getQuery).to.be.calledOn(ops);
-			expect(ops.getQuery).to.be.calledWith(op);
-			expect(ops.queryHasComment).to.be.calledOnce;
-			expect(ops.queryHasComment).to.be.calledOn(ops);
-			expect(ops.queryHasComment).to.be.calledWith(query, comment);
-			expect(result).to.equal(ops.queryHasComment.firstCall.returnValue);
+			expect(opUtils.getQuery).to.be.calledOnce;
+			expect(opUtils.getQuery).to.be.calledOn(opUtils);
+			expect(opUtils.getQuery).to.be.calledWith(op);
+			expect(opUtils.queryHasComment).to.be.calledOnce;
+			expect(opUtils.queryHasComment).to.be.calledOn(opUtils);
+			expect(opUtils.queryHasComment).to.be.calledWith(query, comment);
+			expect(result).to.equal(opUtils.queryHasComment.firstCall.returnValue);
 		});
 	});
 
@@ -179,18 +199,18 @@ describe('utils/ops', function() {
 			let bazOp = { op: 'baz', opid: 42 };
 			let currentOpDoc = { inprog: [ fooOp, barOp, bazOp ] };
 			let comment = 'some comment';
-			sandbox.stub(ops, 'hasComment')
+			sandbox.stub(opUtils, 'hasComment')
 				.withArgs(fooOp, comment).returns(true)
 				.withArgs(barOp, comment).returns(false)
 				.withArgs(bazOp, comment).returns(true);
 
-			let result = ops.getOpIdsWithComment(currentOpDoc, comment);
+			let result = opUtils.getOpIdsWithComment(currentOpDoc, comment);
 
-			expect(ops.hasComment).to.be.calledThrice;
-			expect(ops.hasComment).to.always.be.calledOn(ops);
-			expect(ops.hasComment).to.be.calledWith(fooOp, comment);
-			expect(ops.hasComment).to.be.calledWith(barOp, comment);
-			expect(ops.hasComment).to.be.calledWith(bazOp, comment);
+			expect(opUtils.hasComment).to.be.calledThrice;
+			expect(opUtils.hasComment).to.always.be.calledOn(opUtils);
+			expect(opUtils.hasComment).to.be.calledWith(fooOp, comment);
+			expect(opUtils.hasComment).to.be.calledWith(barOp, comment);
+			expect(opUtils.hasComment).to.be.calledWith(bazOp, comment);
 			expect(result).to.deep.equal([ fooOp.opid, bazOp.opid ]);
 		});
 	});
