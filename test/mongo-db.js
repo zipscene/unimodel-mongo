@@ -47,10 +47,10 @@ describe('MongoDb', function() {
 		testdb.connect(testScaffold.config.nonexistantUri);
 	});
 
-	describe('#killOpsWithComment', function() {
-		it('gets opIds with matching commments and kills them', function() {
+	describe('#killOperation', function() {
+		it('gets ids of ops with matching commments and kills them', function() {
 			let testdb = new MongoDb();
-			let comment = 'some comment';
+			let operationId = 'some-operation-id';
 			let opIds = [ 12345, 67890 ];
 			let opsKilled = false;
 			sinon.stub(testdb, '_getOpIdsWithComment').resolves(opIds);
@@ -63,11 +63,11 @@ describe('MongoDb', function() {
 				});
 			});
 
-			return testdb.killOpsWithComment(comment)
+			return testdb.killOperation(operationId)
 				.then(() => {
 					expect(testdb._getOpIdsWithComment).to.be.calledOnce;
 					expect(testdb._getOpIdsWithComment).to.be.calledOn(testdb);
-					expect(testdb._getOpIdsWithComment).to.be.calledWith(comment);
+					expect(testdb._getOpIdsWithComment).to.be.calledWith(operationId);
 					expect(testdb._killOps).to.be.calledOnce;
 					expect(testdb._killOps).to.be.calledOn(testdb);
 					expect(testdb._killOps).to.be.calledWith(opIds);
