@@ -18,9 +18,10 @@ describe('utils/ops', function() {
 	});
 
 	describe('::addComment', function() {
+		const comment = 'some comment';
+
 		it('returns copy of query with comment added as first key', function() {
 			let query = { foo: 'bar' };
-			let comment = 'some comment';
 
 			let result = opUtils.addComment(query, comment);
 
@@ -28,12 +29,21 @@ describe('utils/ops', function() {
 			expect(Object.keys(result)).to.deep.equal([ '$comment', 'foo' ]);
 		});
 
-		it('returns unchanged query if comment is undefined', function() {
-			let query = { foo: 'bar' };
+		it('prevents query from overwriting comment', function() {
+			let query = { $comment: 'other-comment', foo: 'bar' };
+
+			let result = opUtils.addComment(query, comment);
+
+			expect(result).to.deep.equal({ $comment: comment, foo: 'bar' });
+			expect(Object.keys(result)).to.deep.equal([ '$comment', 'foo' ]);
+		});
+
+		it('deletes comment from query if comment is undefined', function() {
+			let query = { $comment: 'other-comment', foo: 'bar' };
 
 			let result = opUtils.addComment(query, undefined);
 
-			expect(result).to.equal(query);
+			expect(result).to.deep.equal({ foo: 'bar' });
 		});
 	});
 
