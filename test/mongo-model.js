@@ -630,7 +630,8 @@ describe('MongoModel', function() {
 				limit: 32,
 				fields: [ 'foo', 'bar' ],
 				total: true,
-				sort: [ 'bar', '-foo' ]
+				sort: [ 'bar', '-foo' ],
+				canCursorTimeout: false
 			}))
 			.then((documents) => {
 				expect(documents.length).to.equal(32);
@@ -670,7 +671,8 @@ describe('MongoModel', function() {
 				limit: 32,
 				fields: [ 'foo', 'bar' ],
 				total: true,
-				sort: [ 'bar', '-foo' ]
+				sort: [ 'bar', '-foo' ],
+				canCursorTimeout: false
 			}).intoArray())
 			.then((documents) => {
 				expect(documents.length).to.equal(32);
