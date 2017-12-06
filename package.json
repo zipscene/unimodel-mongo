@@ -34,7 +34,7 @@
     "common-schema": "^1.8.0",
     "objtools": "^1.6.2",
     "polytoken": "^0.0.5",
-    "simprof": "^1.2.7",
+    "simprof": "^1.3.0",
     "unimodel-core": "^0.6.14"
   },
   "devDependencies": {
