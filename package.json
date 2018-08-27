@@ -2,7 +2,7 @@
   "name": "unimodel-mongo",
   "version": "1.2.15",
   "description": "Universal model framework, mongodb module",
-  "main": "./dist/lib/index.js",
+  "main": "./lib/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/zipscene/unimodel-mongo.git"
@@ -14,12 +14,10 @@
   "scripts": {
     "lint": "node ./node_modules/.bin/eslint . || exit 0",
     "docs": "node ./node_modules/.bin/yuidoc .",
-    "test": "npm run-script build && node ./node_modules/.bin/mocha ./dist/test -R spec",
-    "build": "rm -rf dist && ./node_modules/.bin/broccoli build dist && rm -rf tmp",
-    "prepublish": "npm run-script build && npm run-script docs"
+    "test": "node ./node_modules/.bin/mocha ./test -R spec",
+    "prepublish": "npm run-script docs"
   },
   "dependencies": {
-    "babel-runtime": "5.8.3",
     "bson": "^0.4.12",
     "crisphooks": "^2.0.0",
     "geolib": "^2.0.21",
@@ -38,12 +36,6 @@
     "unimodel-core": "^0.6.14"
   },
   "devDependencies": {
-    "broccoli": "^0.16.4",
-    "broccoli-babel-transpiler": "^5.3.1",
-    "broccoli-cli": "^1.0.0",
-    "broccoli-merge-trees": "^0.2.2",
-    "broccoli-static-compiler": "^0.2.1",
-    "broccoli-wrap": "0.0.2",
     "chai": "^3.2.0",
     "chai-as-promised": "^5.1.0",
     "es6-promise": "^2.3.0",
@@ -51,7 +43,6 @@
     "mocha": "^2.2.5",
     "sinon": "^2.1.0",
     "sinon-chai": "^2.9.0",
-    "source-map-support": "^0.3.2",
     "yuidocjs": "^0.8.0"
   },
   "license": "Apache-2.0"
