@@ -24,6 +24,7 @@ const keySort = (a, b) => {
 
 describe('MongoModel', function() {
 	beforeEach(testScaffold.resetAndConnect);
+	after(testScaffold.reset);
 
 	it('#getName', function() {
 		let model = createModel('FooBar', { foo: String });
@@ -321,8 +322,8 @@ describe('MongoModel', function() {
 				expect(model.indexes).to.deep.equal(collectionIndexes);
 
 				// Specs must be sorted, otherwise the order may differ.
-				let collectionSpecs = _.pluck(model.indexes, 'key').sort(compareByKeys);
-				let schemaSpecs = _.pluck(model.getIndexes(), 'spec').sort(compareByKeys);
+				let collectionSpecs = _.map(model.indexes, 'key').sort(compareByKeys);
+				let schemaSpecs = _.map(model.getIndexes(), 'spec').sort(compareByKeys);
 
 				// Mongo mandates the `_id` index as of 3.4.
 				schemaSpecs.unshift({ _id: 1 });
