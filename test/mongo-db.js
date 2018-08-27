@@ -14,17 +14,21 @@ chai.use(sinonChai);
 
 describe('MongoDb', function() {
 	let sandbox;
+	let testdb;
 
 	beforeEach(function() {
 		sandbox = sinon.createSandbox();
+		testdb = undefined;
 	});
 
 	afterEach(function() {
 		sandbox.restore();
+		if (testdb) testdb.close();
+		testdb = undefined;
 	});
 
 	it('should connect to mongo', function(done) {
-		let testdb = new MongoDb();
+		testdb = new MongoDb();
 		testdb.connect(testScaffold.config.uri)
 			.then(() => done())
 			.catch(done)
@@ -32,13 +36,13 @@ describe('MongoDb', function() {
 	});
 
 	it('should emit a connect event', function(done) {
-		let testdb = new MongoDb();
+		testdb = new MongoDb();
 		testdb.on('connect', () => done());
 		testdb.connect(testScaffold.config.uri);
 	});
 
 	it('should emit an error event on error', function(done) {
-		let testdb = new MongoDb();
+		testdb = new MongoDb();
 		testdb.on('connect', () => done(new Error('Unexpected success')));
 		testdb.on('error', (err) => {
 			expect(err).to.be.an.instanceof(MongoError);
@@ -49,7 +53,7 @@ describe('MongoDb', function() {
 
 	describe('#killOperation', function() {
 		it('gets ids of ops with matching commments and kills them', function() {
-			let testdb = new MongoDb();
+			testdb = new MongoDb();
 			let operationId = 'some-operation-id';
 			let opIds = [ 12345, 67890 ];
 			let opsKilled = false;
@@ -78,7 +82,7 @@ describe('MongoDb', function() {
 
 	describe('#_getOpIdsWithComment', function() {
 		it('resolves with result of currentOp command on admin db', function() {
-			let testdb = new MongoDb();
+			testdb = new MongoDb();
 			return testdb.connect(testScaffold.config.uri)
 				.then(() => {
 					let comment = 'some comment';
@@ -132,6 +136,10 @@ describe('MongoDb', function() {
 					admindb = testdb.db.admin();
 					sinon.stub(testdb.db, 'admin').returns(admindb);
 				});
+		});
+
+		afterEach(function() {
+			testdb.close();
 		});
 
 		it('resolves after pasyn::each on provided op ids', function() {

@@ -12,6 +12,7 @@ chai.use(require('chai-as-promised'));
 
 describe('MongoError', function() {
 	beforeEach(testScaffold.resetAndConnect);
+	after(testScaffold.reset);
 
 	it('should parse error on duplicated id', function() {
 		let model = createModel('testings', { foo: String });

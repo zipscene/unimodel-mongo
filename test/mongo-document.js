@@ -12,6 +12,7 @@ chai.use(require('chai-as-promised'));
 
 describe('MongoDocument', function() {
 	beforeEach(testScaffold.resetAndConnect);
+	after(testScaffold.reset);
 
 	it('should trigger post-init hooks on init', function() {
 		this.timeout(100000);

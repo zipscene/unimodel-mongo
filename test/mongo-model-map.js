@@ -14,6 +14,7 @@ const hash = MongoModel.createMapIndexHash;
 
 describe('MongoModel (Map Support)', function() {
 	beforeEach(testScaffold.resetAndConnect);
+	after(testScaffold.reset);
 
 	describe('index', function() {
 
