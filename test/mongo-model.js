@@ -1672,17 +1672,17 @@ describe('MongoModel', function() {
 				}
 
 				return model.insertMulti(records)
-				.then(() => model.aggregate({}, { stats: 'foo' }, { timeout: 0.001 }))
-				.then(
-					() => {
-						throw new Error('aggregate should have failed');
-					},
-					(ex) => {
-						expect(ex).to.be.an.instanceof(XError);
-						expect(ex.code).to.equal(XError.TIMED_OUT);
-						expect(ex.cause).to.be.an.instanceof(Error);
-					}
-				);
+					.then(() => model.aggregate({}, { stats: 'foo' }, { timeout: 0.001 }))
+					.then(
+						() => {
+							throw new Error('aggregate should have failed');
+						},
+						(ex) => {
+							expect(ex).to.be.an.instanceof(XError);
+							expect(ex.code).to.equal(XError.TIMED_OUT);
+							expect(ex.cause).to.be.an.instanceof(Error);
+						}
+					);
 			});
 		}
 	});
@@ -1733,17 +1733,17 @@ describe('MongoModel', function() {
 		}
 
 		return model.insertMulti(records)
-		.then(() => model.count({ foo: true }, { timeout: 0.001 }))
-		.then(
-			() => {
-				throw new Error('count should have failed');
-			},
-			(ex) => {
-				expect(ex).to.be.an.instanceof(XError);
-				expect(ex.code).to.equal(XError.TIMED_OUT);
-				expect(ex.cause).to.be.an.instanceof(Error);
-			}
-		);
+			.then(() => model.count({ foo: true }, { timeout: 0.001 }))
+			.then(
+				() => {
+					throw new Error('count should have failed');
+				},
+				(ex) => {
+					expect(ex).to.be.an.instanceof(XError);
+					expect(ex.code).to.equal(XError.TIMED_OUT);
+					expect(ex.cause).to.be.an.instanceof(Error);
+				}
+			);
 	});
 
 	it.skip('should support timeout option in MongoModel#find', function() {
@@ -1755,17 +1755,17 @@ describe('MongoModel', function() {
 		}
 
 		return model.insertMulti(records)
-		.then(() => model.find({}, { timeout: 0.001 }))
-		.then(
-			() => {
-				throw new Error('find should have failed');
-			},
-			(ex) => {
-				expect(ex).to.be.an.instanceof(XError);
-				expect(ex.code).to.equal(XError.TIMED_OUT);
-				expect(ex.cause).to.be.an.instanceof(	Error);
-			}
-		);
+			.then(() => model.find({}, { timeout: 0.001 }))
+			.then(
+				() => {
+					throw new Error('find should have failed');
+				},
+				(ex) => {
+					expect(ex).to.be.an.instanceof(XError);
+					expect(ex.code).to.equal(XError.TIMED_OUT);
+					expect(ex.cause).to.be.an.instanceof(	Error);
+				}
+			);
 	});
 
 	describe('geo queries', function() {

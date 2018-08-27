@@ -19,7 +19,7 @@ describe('MongoError', function() {
 
 		let collection;
 		let promise = model.collectionPromise
-			.then((_collection) => collection = _collection)
+			.then((_collection) => { collection = _collection; })
 			.then(() => collection.insertOne({ _id: 'some id', foo: 'bar' }))
 			.then(() => collection.insertOne({ _id: 'some id', foo: 'baz' }))
 			.catch((err) => {
@@ -42,7 +42,7 @@ describe('MongoError', function() {
 
 		let collection;
 		let promise = model.collectionPromise
-			.then((_collection) => collection = _collection)
+			.then((_collection) => { collection = _collection; })
 			.then(() => collection.insertOne({ foo: 'one', bar: 'two' }))
 			.then(() => collection.insertOne({ foo: 'one', bar: 'two' }))
 			.catch((err) => {

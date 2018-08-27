@@ -162,7 +162,7 @@ describe('utils/ops', function() {
 			it('tolerates both escaped and unescaped double quotes in comment', function() {
 				let comment = '"some"comment"';
 				let query = `$comment: "${comment}"`;
-				let otherQuery = `$comment: "\\"some\\"comment\\""`;
+				let otherQuery = '$comment: "\\"some\\"comment\\""';
 				let anotherQuery = `$comment: \\"${comment}\\"`;
 
 				expect(opUtils.queryHasComment(query, comment)).to.be.true;
@@ -173,7 +173,7 @@ describe('utils/ops', function() {
 			it('tolerates regexp special characters in comment', function() {
 				let comment = '.*';
 				let query = `$comment: "${comment}"`;
-				let otherQuery = `$comment: "otherComment"`;
+				let otherQuery = '$comment: "otherComment"';
 
 				expect(opUtils.queryHasComment(query, comment)).to.be.true;
 				expect(opUtils.queryHasComment(otherQuery, comment)).to.be.false;
