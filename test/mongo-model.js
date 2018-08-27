@@ -1768,7 +1768,7 @@ describe('MongoModel', function() {
 		);
 	});
 
-	describe('geoNear conversion', function() {
+	describe('geo queries', function() {
 
 		it('should work with $near queries', function() {
 			let model = createModel('Testings', { point: { type: 'geopoint', index: true } });
@@ -1846,7 +1846,8 @@ describe('MongoModel', function() {
 				});
 		});
 
-		it('should throw if $near is inside $or', function() {
+		// Skipped because $near is now allowed inside $or (except when using geohashed indexes)
+		it.skip('should throw if $near is inside $or', function() {
 			let model = createModel('Testings', { point: { type: 'geopoint', index: true } });
 			return model.collectionPromise
 				.then(() => model.insertMulti([
