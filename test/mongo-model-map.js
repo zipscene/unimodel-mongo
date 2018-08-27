@@ -6,8 +6,8 @@ const { expect } = require('chai');
 const { createModel, MongoModel, MongoError } = require('../lib');
 const testScaffold = require('./lib/mongo-scaffold');
 const { map } = require('common-schema');
-const bson = require('bson');
-const BSON = new bson.BSONPure.BSON();
+const BSON = require('bson');
+const bson = new BSON();
 const objtools = require('objtools');
 
 const hash = MongoModel.createMapIndexHash;
@@ -96,15 +96,15 @@ describe('MongoModel (Map Support)', function() {
 				]
 			});
 			return Model.collectionPromise.then(() => {
-				let gtbsonA = BSON.serialize([ 'zs', '2014', 2 ]);
-				let ltbsonA = BSON.serialize([ 'zs', '2014' ]);
+				let gtbsonA = bson.serialize([ 'zs', '2014', 2 ]);
+				let ltbsonA = bson.serialize([ 'zs', '2014' ]);
 				ltbsonA[ltbsonA.length - 2] += 1;
 				ltbsonA[0] = gtbsonA[0];
-				let ltbsonB = BSON.serialize([ 'zs', '2014', 2 ]);
-				let gtbsonB = BSON.serialize([ 'zs', '2014' ]);
+				let ltbsonB = bson.serialize([ 'zs', '2014', 2 ]);
+				let gtbsonB = bson.serialize([ 'zs', '2014' ]);
 				gtbsonB[0] = ltbsonB[0];
 				expect(query.getData()[hash('aggrs|orderTotal^total')])
-					.to.equal(BSON.serialize([ 'zs', '2014', 4 ]).toString());
+					.to.equal(bson.serialize([ 'zs', '2014', 4 ]).toString());
 				expect(query.getData().$and).to.deep.include.members([
 					{ [hash('aggrs|orderTotal^total')]: {
 						$gt: gtbsonA.toString(),
@@ -115,8 +115,8 @@ describe('MongoModel (Map Support)', function() {
 						$gte: gtbsonB.toString()
 					} },
 					{ [hash('aggrs|orderTotal^total')]: {
-						$gt: BSON.serialize([ 'zs', '2014', 2 ]).toString(),
-						$lte: BSON.serialize([ 'zs', '2014', 10 ]).toString()
+						$gt: bson.serialize([ 'zs', '2014', 2 ]).toString(),
+						$lte: bson.serialize([ 'zs', '2014', 10 ]).toString()
 					} }
 				]);
 			});
@@ -138,7 +138,7 @@ describe('MongoModel (Map Support)', function() {
 			});
 			return Model.collectionPromise.then(() => {
 				expect(query.getData()).to.deep.equal({
-					[hash('aggrs|orderTotal^count^total')]: BSON.serialize([ 'zs', '2014', 2, 4 ]).toString()
+					[hash('aggrs|orderTotal^count^total')]: bson.serialize([ 'zs', '2014', 2, 4 ]).toString()
 				});
 			});
 		});
@@ -208,7 +208,7 @@ describe('MongoModel (Map Support)', function() {
 					$and: [
 						{ $or: [
 							{ $nor: [
-								{ [hash('orderTotal^count')]: BSON.serialize([ '2014', 5 ]).toString() }
+								{ [hash('orderTotal^count')]: bson.serialize([ '2014', 5 ]).toString() }
 							] }
 						] }
 					]
@@ -342,24 +342,24 @@ describe('MongoModel (Map Support)', function() {
 							let docData = objtools.deepCopy(doc.getData());
 							Model.normalizeDocumentIndexedMapValues(docData);
 							expect(docData[hash('aggrs|orderTotal^count')]).to.deep.include.members([
-								BSON.serialize([ 'zs', '2014-09', 5 ]).toString(),
-								BSON.serialize([ 'zs', '2014-10', 10 ]).toString(),
-								BSON.serialize([ 'marcos', '2015-01', 3 ]).toString()
+								bson.serialize([ 'zs', '2014-09', 5 ]).toString(),
+								bson.serialize([ 'zs', '2014-10', 10 ]).toString(),
+								bson.serialize([ 'marcos', '2015-01', 3 ]).toString()
 							]);
 							expect(docData[hash('aggrs|orderTotal^total')]).to.deep.include.members([
-								BSON.serialize([ 'zs', '2014-09', 2 ]).toString(),
-								BSON.serialize([ 'zs', '2014-10', 1 ]).toString(),
-								BSON.serialize([ 'marcos', '2015-01', 123 ]).toString()
+								bson.serialize([ 'zs', '2014-09', 2 ]).toString(),
+								bson.serialize([ 'zs', '2014-10', 1 ]).toString(),
+								bson.serialize([ 'marcos', '2015-01', 123 ]).toString()
 							]);
 							expect(docData[hash('aggrs^total')])
 								.to.deep.include.members([
-									BSON.serialize([ 'zs', 3 ]).toString(),
-									BSON.serialize([ 'marcos', 123 ]).toString()
+									bson.serialize([ 'zs', 3 ]).toString(),
+									bson.serialize([ 'marcos', 123 ]).toString()
 								]);
 							expect(docData[hash('aggrs|orderTotal^count^total')]).to.deep.include.members([
-								BSON.serialize([ 'zs', '2014-09', 5, 2 ]).toString(),
-								BSON.serialize([ 'zs', '2014-10', 10, 1 ]).toString(),
-								BSON.serialize([ 'marcos', '2015-01', 3, 123 ]).toString()
+								bson.serialize([ 'zs', '2014-09', 5, 2 ]).toString(),
+								bson.serialize([ 'zs', '2014-10', 10, 1 ]).toString(),
+								bson.serialize([ 'marcos', '2015-01', 3, 123 ]).toString()
 							]);
 						});
 				});
