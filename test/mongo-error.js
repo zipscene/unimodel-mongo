@@ -19,8 +19,8 @@ describe('MongoError', function() {
 		let collection;
 		let promise = model.collectionPromise
 			.then((_collection) => collection = _collection)
-			.then(() => collection.insert({ _id: 'some id', foo: 'bar' }))
-			.then(() => collection.insert({ _id: 'some id', foo: 'baz' }))
+			.then(() => collection.insertOne({ _id: 'some id', foo: 'bar' }))
+			.then(() => collection.insertOne({ _id: 'some id', foo: 'baz' }))
 			.catch((err) => {
 				throw MongoError.fromMongoError(err, model);
 			})
@@ -42,8 +42,8 @@ describe('MongoError', function() {
 		let collection;
 		let promise = model.collectionPromise
 			.then((_collection) => collection = _collection)
-			.then(() => collection.insert({ foo: 'one', bar: 'two' }))
-			.then(() => collection.insert({ foo: 'one', bar: 'two' }))
+			.then(() => collection.insertOne({ foo: 'one', bar: 'two' }))
+			.then(() => collection.insertOne({ foo: 'one', bar: 'two' }))
 			.catch((err) => {
 				throw MongoError.fromMongoError(err, model);
 			})
