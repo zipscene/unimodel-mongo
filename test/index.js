@@ -8,6 +8,7 @@ const testScaffold = require('./lib/mongo-scaffold');
 
 describe('zs-unimodel-mongo', () => {
 	beforeEach(testScaffold.resetAndConnect);
+	after(testScaffold.reset);
 
 	it('should register and be able to get model', () => {
 		let model = mongo.createModel('Foo', {
