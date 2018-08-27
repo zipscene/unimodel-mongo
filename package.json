@@ -15,7 +15,7 @@
     "lint": "node ./node_modules/.bin/eslint . || exit 0",
     "docs": "node ./node_modules/.bin/yuidoc .",
     "test": "node ./node_modules/.bin/mocha ./test -R spec",
-    "prepublish": "npm run-script docs"
+    "prepublishOnly": "npm run-script docs"
   },
   "dependencies": {
     "bson": "^3.0.2",
