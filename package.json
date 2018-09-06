@@ -1,6 +1,6 @@
 {
   "name": "unimodel-mongo",
-  "version": "1.2.15",
+  "version": "2.0.0",
   "description": "Universal model framework, mongodb module",
   "main": "./lib/index.js",
   "repository": {
@@ -19,31 +19,33 @@
   },
   "dependencies": {
     "bson": "^3.0.2",
+    "common-query": "^2.0.1",
+    "common-schema": "^2.0.1",
     "crisphooks": "^2.0.0",
-    "geolib": "^2.0.21",
+    "geolib": "^2.0.24",
     "inheritz": "^1.2.0",
     "lodash": "^4.17.10",
-    "moment": "^2.10.6",
-    "mongodb": "3.1.4",
-    "pasync": "^1.4.0",
-    "xerror": "^1.0.0",
-    "zstreams": "^3.2.1",
-    "common-query": "^1.10.3",
-    "common-schema": "^1.8.0",
-    "objtools": "^1.6.2",
-    "polytoken": "^0.0.6",
-    "simprof": "^1.3.0",
-    "unimodel-core": "^0.6.14"
+    "moment": "^2.22.2",
+    "mongodb": "^3.1.4",
+    "objtools": "^2.0.1",
+    "pasync": "^1.5.0",
+    "polytoken": "^1.0.0",
+    "simprof": "^2.0.0",
+    "unimodel-core": "^1.0.0",
+    "xerror": "^1.1.2",
+    "zstreams": "^4.0.0"
   },
   "devDependencies": {
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
-    "es6-promise": "^4.2.4",
-    "eslint": "^5.4.0",
+    "eslint": "^5.5.0",
     "mocha": "^5.2.0",
-    "sinon": "^6.1.5",
+    "sinon": "^6.2.0",
     "sinon-chai": "^3.2.0",
     "yuidocjs": "^0.10.2"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">= 8.0.0"
+  }
 }
