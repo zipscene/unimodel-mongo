@@ -326,4 +326,14 @@ describe('MongoDocument', function() {
 			});
 	});
 
+	it('should allow explicit internal ids', async function() {
+		let model = createModel('testings', { _id: String, foo: String });
+		let document = new MongoDocument(model, { _id: 'xxx', foo: 'bar' });
+		expect(document.data._id).to.equal('xxx');
+		await document.save();
+		expect(document.data._id).to.equal('xxx');
+		let d = await model.findOne({ foo: 'bar' });
+		expect(d.data._id).to.equal('xxx');
+	});
+
 });
