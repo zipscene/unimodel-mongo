@@ -744,6 +744,18 @@ describe('MongoModel', function() {
 			});
 	});
 
+	it('should remove multiple records with MongoModel#remove', function() {
+		let model = createModel('Testings', { foo: Number });
+
+		return model.insertMulti([ { foo: 1 }, { foo: 2 } ])
+			.then(() => model.remove({ foo: { $gt: 0 } }))
+			.then(() => model.find({}))
+			.then((documents) => {
+				expect(documents.length).to.equal(0);
+			});
+	});
+
+
 	describe('aggregates', function() {
 		let hasFacetSupport;
 
