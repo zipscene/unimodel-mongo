@@ -1093,6 +1093,30 @@ describe('MongoModel', function() {
 					});
 			});
 
+			it('should support grouping by array index fields', function() {
+				let model = createModel('Testings', { foo: [ Number ] });
+				return model.insertMulti([ { foo: [ 1, 2 ] }, { foo: [ 5, 2 ] } ])
+					.then(() => model.aggregate({}, { groupBy: 'foo.1', total: true }))
+					.then((result) => {
+						let expected = [ { key: [ 2 ], total: 2 } ];
+						expect(result).to.deep.equal(expected);
+					});
+			});
+
+			it('should support grouping by array index fields 2', function() {
+				let model = createModel('Testings', { foo: [ Number ] });
+				return model.insertMulti([ { foo: [ 1, 2 ] }, { foo: [] } ])
+					.then(() => model.aggregate({}, { groupBy: 'foo.1', total: true }))
+					.then((result) => {
+						let expected = [
+							{ key: [ 2 ], total: 1 },
+							{ key: [ null ], total: 1 }
+						];
+						expect(result).to.deep.equal(expected);
+					});
+			});
+
+
 			it('should support sum aggregates', function() {
 				let model = createModel('Testings', {
 					foo: String,
