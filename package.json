@@ -1,6 +1,6 @@
 {
   "name": "unimodel-mongo",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Universal model framework, mongodb module",
   "main": "./lib/index.js",
   "repository": {
@@ -31,7 +31,7 @@
     "pasync": "^1.5.0",
     "polytoken": "^1.0.0",
     "simprof": "^2.1.0",
-    "unimodel-core": "^1.0.0",
+    "unimodel-core": "^1.1.0",
     "xerror": "^1.1.2",
     "zstreams": "^4.0.0"
   },
