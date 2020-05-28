@@ -1,6 +1,6 @@
 {
   "name": "unimodel-mongo",
-  "version": "2.2.3",
+  "version": "2.2.4",
   "description": "Universal model framework, mongodb module",
   "main": "./lib/index.js",
   "repository": {
@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "bson": "^3.0.2",
-    "common-query": "^2.0.1",
+    "common-query": "^2.0.4",
     "common-schema": "^2.0.1",
     "crisphooks": "^2.0.0",
     "geolib": "^2.0.24",
