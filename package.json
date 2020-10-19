@@ -1,6 +1,6 @@
 {
   "name": "unimodel-mongo",
-  "version": "2.2.5",
+  "version": "3.0.0",
   "description": "Universal model framework, mongodb module",
   "main": "./lib/index.js",
   "repository": {
@@ -13,39 +13,36 @@
   ],
   "scripts": {
     "lint": "node ./node_modules/.bin/eslint . || exit 0",
-    "docs": "node ./node_modules/.bin/yuidoc .",
-    "test": "node ./node_modules/.bin/mocha ./test -R spec",
-    "prepublishOnly": "npm run-script docs"
+    "test": "node ./node_modules/.bin/mocha ./test -R spec"
   },
   "dependencies": {
-    "bson": "^3.0.2",
-    "common-query": "^2.0.4",
-    "common-schema": "^2.0.1",
-    "crisphooks": "^2.0.0",
-    "geolib": "^2.0.24",
+    "bson": "^4.1.0",
+    "common-query": "^3.0.0",
+    "common-schema": "^3.0.0",
+    "crisphooks": "^2.0.1",
+    "geolib": "^3.3.1",
     "inheritz": "^1.2.0",
-    "lodash": "^4.17.10",
-    "moment": "^2.22.2",
-    "mongodb": "^3.1.4",
-    "objtools": "^2.0.1",
-    "pasync": "^1.5.0",
-    "polytoken": "^1.0.0",
-    "simprof": "^2.1.0",
-    "unimodel-core": "^1.1.0",
-    "xerror": "^1.1.2",
-    "zstreams": "^4.0.0"
+    "lodash": "^4.17.20",
+    "moment": "^2.27.0",
+    "mongodb": "^3.6.0",
+    "objtools": "^3.0.0",
+    "pasync": "^2.0.1",
+    "polytoken": "^2.0.0",
+    "simprof": "^3.0.0",
+    "unimodel-core": "^2.0.0",
+    "xerror": "^2.0.0",
+    "zstreams": "^5.0.0"
   },
   "devDependencies": {
-    "chai": "^4.1.2",
+    "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "eslint": "^5.5.0",
-    "mocha": "^5.2.0",
-    "sinon": "^6.2.0",
-    "sinon-chai": "^3.2.0",
-    "yuidocjs": "^0.10.2"
+    "eslint": "^7.7.0",
+    "mocha": "^8.1.2",
+    "sinon": "^9.0.3",
+    "sinon-chai": "^3.5.0"
   },
   "license": "Apache-2.0",
   "engines": {
-    "node": ">= 8.0.0"
+    "node": ">= 14.0.0"
   }
 }

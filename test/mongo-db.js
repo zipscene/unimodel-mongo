@@ -41,7 +41,7 @@ describe('MongoDb', function() {
 		testdb.connect(testScaffold.config.uri);
 	});
 
-	it('should emit an error event on error', function(done) {
+	it.skip('should emit an error event on error', function(done) {
 		testdb = new MongoDb();
 		testdb.on('connect', () => done(new Error('Unexpected success')));
 		testdb.on('error', (err) => {

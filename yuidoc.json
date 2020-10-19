@@ -1,8 +1,0 @@
-{
-	"name": "unimodel-mongo",
-	"description": "Unimodel library for accessing mongodb",
-	"options": {
-		"outdir": "./docs",
-		"exclude": "dist,tmp,test,node_modules"
-	}
-}

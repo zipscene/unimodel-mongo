@@ -6,8 +6,7 @@ const { expect } = require('chai');
 const { createModel, MongoModel, MongoError } = require('../lib');
 const testScaffold = require('./lib/mongo-scaffold');
 const { map } = require('common-schema');
-const BSON = require('bson');
-const bson = new BSON();
+const bson = require('bson');
 const objtools = require('objtools');
 
 const hash = MongoModel.createMapIndexHash;
