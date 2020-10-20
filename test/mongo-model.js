@@ -312,7 +312,11 @@ describe('MongoModel', function() {
 		}
 
 		function compareByKeys(a, b) {
-			return hashByKeys(a) > hashByKeys(b);
+			a = hashByKeys(a);
+			b = hashByKeys(b);
+			if (a > b) return 1;
+			if (a < b) return -1;
+			return 0;
 		}
 
 		return model.collectionPromise
@@ -324,9 +328,6 @@ describe('MongoModel', function() {
 				// Specs must be sorted, otherwise the order may differ.
 				let collectionSpecs = _.map(model.indexes, 'key').sort(compareByKeys);
 				let schemaSpecs = _.map(model.getIndexes(), 'spec').sort(compareByKeys);
-
-				// Mongo mandates the `_id` index as of 3.4.
-				schemaSpecs.unshift({ _id: 1 });
 
 				// Ensure specs in indexes property match specs in schema.
 				expect(collectionSpecs).to.deep.equal(schemaSpecs);

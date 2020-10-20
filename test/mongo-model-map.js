@@ -39,11 +39,11 @@ describe('MongoModel (Map Support)', function() {
 			model.index({ 'aggrs.orderTotal.total': 1, 'aggrs.orderTotal.count': 1 });
 			return model.collectionPromise
 				.then(() => {
-					expect(model._indexes).to.deep.include.members([
-						{ spec: { [hash('aggrs^total')]: 1 }, options: {} },
-						{ spec: { [hash('aggrs|orderTotal^count')]: 1 }, options: {} },
-						{ spec: { [hash('aggrs|orderTotal^total')]: 1 }, options: {} },
-						{ spec: { [hash('aggrs|orderTotal^count^total')]: 1 }, options: {} }
+					expect(model._indexes.map((ind) => { return { spec: ind.spec }; })).to.deep.include.members([
+						{ spec: { [hash('aggrs^total')]: 1 } },
+						{ spec: { [hash('aggrs|orderTotal^count')]: 1 }},
+						{ spec: { [hash('aggrs|orderTotal^total')]: 1 }},
+						{ spec: { [hash('aggrs|orderTotal^count^total')]: 1 }}
 					]);
 				});
 		});
